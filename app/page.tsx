@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CATEGORIES, getPosts } from "@/lib/wp";
 import type { Article } from "@/lib/types";
 import HeroCarousel from "@/components/news/HeroCarousel";
@@ -8,6 +9,7 @@ import SectionTitle from "@/components/news/SectionTitle";
 import CardCarousel from "@/components/news/CardCarousel";
 import AdSlot from "@/components/news/AdSlot";
 import Newsletter from "@/components/layout/Newsletter";
+import { FlameIcon } from "@/components/icons";
 
 export const revalidate = 300;
 
@@ -36,11 +38,13 @@ export default async function HomePage() {
   const editorList = take(4);
   const editorRow = take(3);
   const essential = viral.length >= 4 ? viral : take(5);
+  const videoPool = latest.filter((a) => a.isVideo);
+  const videoNews = videoPool.length >= 5 ? videoPool.slice(0, 5) : take(5);
   const moreNews = take(7);
 
   if (hero.length === 0) {
     return (
-      <div className="container-tb py-24 text-center text-ink-400">
+      <div className="container-tb py-24 text-center text-ink-400 dark:text-white/50">
         No se pudieron cargar las noticias en este momento. Intenta de nuevo.
       </div>
     );
@@ -56,7 +60,7 @@ export default async function HomePage() {
     <>
       {/* HERO + POPULARES */}
       <section className="container-tb pt-8">
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-6 lg:grid-cols-[1fr_348px]">
           <HeroCarousel articles={hero} />
           {populares.length > 0 && <PopularList articles={populares} />}
         </div>
@@ -75,20 +79,20 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="container-tb mt-10">
+      <section className="container-tb mt-6">
         <AdSlot />
       </section>
 
       {/* SELECCIONADO POR NUESTROS EDITORES */}
       {editorBig && (
-        <section className="container-tb mt-12">
+        <section className="container-tb mt-6">
           <SectionTitle title="Seleccionado por nuestros editores" />
-          <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_330px]">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="h-[535px]">
-                <NewsCard article={editorBig} size="lg" priority />
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_330px]">
+            <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+              <div className="h-[320px] lg:h-auto">
+                <NewsCard article={editorBig} size="md" priority />
               </div>
-              <div className="flex flex-col divide-y divide-ink-50">
+              <div className="flex flex-col divide-y divide-ink-50 dark:divide-white/10">
                 {editorList.map((a) => (
                   <NewsListItem
                     key={a.id}
@@ -113,19 +117,21 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* IMPRESCINDIBLE (carrusel) */}
+      {/* IMPRESCINDIBLE (carrusel, fondo oscuro) */}
       {essential.length > 0 && (
-        <section className="container-tb mt-14">
-          <SectionTitle title="Imprescindible" />
-          <div className="mt-7">
-            <CardCarousel articles={essential} cardHeight="h-[452px]" />
+        <section className="mt-14 bg-ink-900 py-14 sm:mt-16">
+          <div className="container-tb">
+            <SectionTitle title="Imprescindible" dark />
+            <div className="mt-6">
+              <CardCarousel articles={essential} cardHeight="h-[452px]" dark />
+            </div>
           </div>
         </section>
       )}
 
       {/* COLUMNAS POR REGIÓN */}
       {regionColumns.length > 0 && (
-        <section className="container-tb mt-14">
+        <section className="container-tb mt-14 sm:mt-16">
           <div className="grid gap-8 lg:grid-cols-3">
             {regionColumns.map((col) => (
               <div key={col.title}>
@@ -133,7 +139,7 @@ export default async function HomePage() {
                 <div className="mt-6 h-[303px]">
                   <NewsCard article={col.items[0]} size="md" />
                 </div>
-                <div className="mt-4 flex flex-col divide-y divide-ink-50">
+                <div className="mt-4 flex flex-col divide-y divide-ink-50 dark:divide-white/10">
                   {col.items.slice(1, 4).map((a) => (
                     <NewsListItem
                       key={a.id}
@@ -149,15 +155,47 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="container-tb mt-14">
+      <section className="container-tb mt-6">
+        <AdSlot />
+      </section>
+
+      {/* NOVEDADES EN VIDEO */}
+      {videoNews.length > 0 && (
+        <section className="container-tb mt-6">
+          <SectionTitle title="Novedades en video" />
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_300px]">
+            <div className="h-[400px] lg:h-[679px]">
+              <NewsCard article={videoNews[0]} size="lg" />
+            </div>
+            {videoNews.length > 1 && (
+              <aside className="rounded-card border border-ink-50 p-4 dark:border-white/10">
+                <div className="flex items-center gap-2 pb-3">
+                  <FlameIcon className="text-red-500" />
+                  <h3 className="text-lg font-semibold text-ink-900 dark:text-white">Populares</h3>
+                  <span className="ml-2 h-px flex-1 bg-ink-100 dark:bg-white/10" />
+                </div>
+                <div className="flex flex-col gap-4">
+                  {videoNews.slice(1, 5).map((a) => (
+                    <div key={a.id} className="h-[136px]">
+                      <NewsCard article={a} size="sm" />
+                    </div>
+                  ))}
+                </div>
+              </aside>
+            )}
+          </div>
+        </section>
+      )}
+
+      <section className="container-tb mt-6">
         <AdSlot />
       </section>
 
       {/* MÁS NOTICIAS */}
       {moreNews.length > 0 && (
-        <section className="container-tb mt-12">
+        <section className="container-tb mt-6">
           <SectionTitle title="Más noticias" />
-          <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {moreNews.slice(0, 4).map((a) => (
               <div key={a.id} className="h-[320px]">
                 <NewsCard article={a} size="sm" />
@@ -176,10 +214,18 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* NEWSLETTER */}
-      <div className="mt-16">
-        <Newsletter />
+      {/* VER MÁS NOTICIAS */}
+      <div className="container-tb mt-6 flex justify-center py-6">
+        <Link
+          href="/noticias"
+          className="rounded-pill border border-brand-500 px-6 py-3 text-lg font-medium text-brand-500 transition hover:bg-brand-50"
+        >
+          Ver más noticias
+        </Link>
       </div>
+
+      {/* NEWSLETTER */}
+      <Newsletter />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -28,6 +29,7 @@ const config: Config = {
         // Neutral scale (from Foundation/White)
         ink: {
           900: "#1E1E1E",
+          800: "#2A2A2A",
           700: "#323232",
           500: "#474747",
           400: "#6C6C6C",
@@ -44,6 +46,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-poppins)", "system-ui", "sans-serif"],
+        heading: ["var(--font-oswald)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         card: "16px",

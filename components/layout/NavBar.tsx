@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BoatIcon, UserIcon } from "@/components/icons";
+import Logo from "./Logo";
 import MobileNav from "./MobileNav";
 
 export default function NavBar() {
@@ -10,23 +11,19 @@ export default function NavBar() {
         <MobileNav />
         <Link
           href="/"
-          className="hidden items-center gap-2 lg:flex"
+          className="hidden lg:flex"
           aria-label="Tu Barco - Inicio"
         >
-          <BoatIcon className="text-white" />
-          <span className="text-2xl font-semibold tracking-tight">
-            <span className="text-cian">TU</span>
-            <span className="text-white">BARCO.NEWS</span>
-          </span>
+          <Logo height={30} />
         </Link>
 
-        {/* CENTRO — logo centrado solo en móvil */}
+        {/* CENTRO — isotipo centrado solo en móvil */}
         <Link
           href="/"
           className="absolute left-1/2 -translate-x-1/2 lg:hidden"
           aria-label="Tu Barco - Inicio"
         >
-          <BoatIcon className="text-white" width={40} height={28} />
+          <BoatIcon className="text-white" width={38} height={26} />
         </Link>
 
         {/* DERECHA */}

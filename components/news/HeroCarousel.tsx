@@ -55,9 +55,9 @@ export default function HeroCarousel({ articles }: Props) {
         </div>
       ))}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%" />
 
-      <div className="absolute left-5 top-5">
+      <div className="absolute left-0 top-6">
         <Badge variant="red" icon="boat">
           Últimas noticias
         </Badge>
@@ -75,23 +75,23 @@ export default function HeroCarousel({ articles }: Props) {
           <button
             onClick={() => go(-1)}
             aria-label="Anterior"
-            className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/25 text-white backdrop-blur transition hover:bg-white/40"
+            className="absolute left-8 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/30 text-white backdrop-blur transition hover:bg-white/40"
           >
             <ArrowLeftIcon />
           </button>
           <button
             onClick={() => go(1)}
             aria-label="Siguiente"
-            className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/25 text-white backdrop-blur transition hover:bg-white/40"
+            className="absolute right-8 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/30 text-white backdrop-blur transition hover:bg-white/40"
           >
             <ArrowRightIcon />
           </button>
         </>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+      <div className="absolute inset-x-0 bottom-0 rounded-b-card p-6 backdrop-blur-[2px] sm:p-8">
         <Link href={`/articulo/${article.slug}`} className="block">
-          <h2 className="max-w-3xl text-2xl font-semibold leading-tight text-white transition-colors hover:text-brand-100 sm:text-4xl">
+          <h2 className="max-w-3xl text-xl font-semibold leading-tight text-white transition-colors hover:text-brand-100 sm:text-2xl">
             {article.title}
           </h2>
         </Link>
@@ -100,7 +100,10 @@ export default function HeroCarousel({ articles }: Props) {
           date={article.date}
           light
           actions
-          className="mt-4 max-w-md"
+          size="md"
+          shareUrl={`/articulo/${article.slug}`}
+          shareTitle={article.title}
+          className="mt-4"
         />
       </div>
 

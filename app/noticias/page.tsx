@@ -1,42 +1,25 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getCategoryBySlug, getPostsByCategoryPaged } from "@/lib/wp";
-import { cleanCategoryName } from "@/lib/utils";
+import { getPostsPaged } from "@/lib/wp";
 import NewsCard from "@/components/news/NewsCard";
 import { ArrowLeftIcon, ArrowRightIcon } from "@/components/icons";
 
 export const revalidate = 300;
 
+export const metadata: Metadata = {
+  title: "Todas las noticias",
+  description: "Todas las últimas noticias de Tu Barco Latinoamérica.",
+};
+
 interface Props {
-  params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const category = await getCategoryBySlug(slug);
-  const name = category ? cleanCategoryName(category.name) : "Categoría";
-  return {
-    title: name,
-    description: `Últimas noticias de ${name} en Tu Barco Latinoamérica.`,
-  };
-}
-
-export default async function CategoryPage({ params, searchParams }: Props) {
-  const { slug } = await params;
+export default async function AllNewsPage({ searchParams }: Props) {
   const { page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam ?? "1") || 1);
 
-  const category = await getCategoryBySlug(slug);
-  if (!category) notFound();
-
-  const { articles, totalPages } = await getPostsByCategoryPaged(
-    category.id,
-    page,
-    12
-  );
-  const name = cleanCategoryName(category.name);
+  const { articles, totalPages } = await getPostsPaged(page, 12);
 
   return (
     <div className="container-tb py-10">
@@ -44,17 +27,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <div className="flex items-center gap-3">
           <span className="h-1.5 w-10 rounded-full bg-brand-500" />
           <h1 className="text-3xl font-semibold text-ink-900 dark:text-white sm:text-4xl">
-            {name}
+            Todas las noticias
           </h1>
         </div>
-        <p className="mt-2 text-sm text-ink-400 dark:text-white/50">
-          {category.count.toLocaleString("es-CO")} noticias publicadas
-        </p>
       </header>
 
       {articles.length === 0 ? (
         <p className="py-16 text-center text-ink-400 dark:text-white/50">
-          No hay noticias en esta categoría por ahora.
+          No hay noticias disponibles por ahora.
         </p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -66,12 +46,11 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         </div>
       )}
 
-      {/* Paginación */}
       {totalPages > 1 && (
         <nav className="mt-12 flex items-center justify-center gap-3">
           {page > 1 && (
             <Link
-              href={`/categoria/${slug}?page=${page - 1}`}
+              href={`/noticias?page=${page - 1}`}
               className="flex h-11 items-center gap-2 rounded-pill border border-ink-50 px-5 text-sm font-medium text-ink-700 transition hover:bg-brand-50 hover:text-brand-500 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/5"
             >
               <ArrowLeftIcon width={18} height={18} />
@@ -83,7 +62,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           </span>
           {page < totalPages && (
             <Link
-              href={`/categoria/${slug}?page=${page + 1}`}
+              href={`/noticias?page=${page + 1}`}
               className="flex h-11 items-center gap-2 rounded-pill border border-ink-50 px-5 text-sm font-medium text-ink-700 transition hover:bg-brand-50 hover:text-brand-500 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/5"
             >
               Siguiente

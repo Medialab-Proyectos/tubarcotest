@@ -22,7 +22,7 @@ export default function NewsListItem({
       className={`group flex gap-4 ${className}`}
     >
       <div
-        className="relative shrink-0 overflow-hidden rounded-xl bg-ink-50"
+        className="relative shrink-0 overflow-hidden rounded-xl bg-ink-50 dark:bg-ink-800"
         style={{ width: thumbWidth, aspectRatio: "16 / 13" }}
       >
         {article.image ? (
@@ -44,7 +44,7 @@ export default function NewsListItem({
       </div>
 
       <div className="flex min-w-0 flex-col justify-center">
-        <h4 className="line-clamp-3 text-[15px] font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500">
+        <h4 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500 dark:text-white/90">
           {article.title}
         </h4>
         <ArticleMeta

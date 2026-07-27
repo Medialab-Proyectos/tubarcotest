@@ -4,10 +4,10 @@ export default function NotFound() {
   return (
     <div className="container-tb flex flex-col items-center justify-center py-32 text-center">
       <p className="text-7xl font-semibold text-brand-500">404</p>
-      <h1 className="mt-4 text-2xl font-semibold text-ink-900">
+      <h1 className="mt-4 text-2xl font-semibold text-ink-900 dark:text-white">
         Página no encontrada
       </h1>
-      <p className="mt-2 max-w-md text-ink-400">
+      <p className="mt-2 max-w-md text-ink-400 dark:text-white/50">
         La noticia que buscas no existe o fue movida. Vuelve al inicio para ver
         lo último.
       </p>

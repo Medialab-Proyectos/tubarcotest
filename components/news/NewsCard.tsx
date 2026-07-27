@@ -17,10 +17,24 @@ interface Props {
   priority?: boolean;
 }
 
+// Confirmado en Figma: 16px en tarjetas ~348px, 20px en tarjetas ~543px, 24px en el Hero (~1092px).
+// Máximo 2 líneas en todos los tamaños.
 const titleSize: Record<Size, string> = {
   sm: "text-base leading-snug line-clamp-2",
-  md: "text-lg leading-snug line-clamp-3",
-  lg: "text-2xl leading-tight line-clamp-3 sm:text-[28px]",
+  md: "text-xl leading-snug line-clamp-2",
+  lg: "text-2xl leading-tight line-clamp-2",
+};
+
+const metaSize: Record<Size, "sm" | "md"> = {
+  sm: "sm",
+  md: "md",
+  lg: "md",
+};
+
+const badgeSize: Record<Size, "sm" | "md"> = {
+  sm: "sm",
+  md: "md",
+  lg: "md",
 };
 
 /** Tarjeta "Noticia Principal": imagen a sangre con overlay y texto encima. */
@@ -30,7 +44,7 @@ export default function NewsCard({
   className = "",
   badge,
   badgeVariant = "red",
-  showActions = false,
+  showActions = true,
   priority = false,
 }: Props) {
   return (
@@ -51,12 +65,12 @@ export default function NewsCard({
         <div className="absolute inset-0 bg-gradient-to-br from-brand-700 to-brand-900" />
       )}
 
-      {/* Gradiente para legibilidad */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+      {/* Gradiente para legibilidad — opaco en la base, se disipa cerca del borde superior */}
+      <div className="absolute inset-0 bg-gradient-to-t from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%" />
 
       {badge && (
-        <div className="absolute left-4 top-4">
-          <Badge variant={badgeVariant} icon="boat">
+        <div className="absolute left-0 top-6">
+          <Badge variant={badgeVariant} icon="boat" size={badgeSize[size]}>
             {badge}
           </Badge>
         </div>
@@ -68,7 +82,7 @@ export default function NewsCard({
         </span>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+      <div className="absolute inset-x-0 bottom-0 rounded-b-card p-4 backdrop-blur-[2px] sm:p-5">
         <h3 className={`font-semibold text-white ${titleSize[size]}`}>
           {article.title}
         </h3>
@@ -77,6 +91,9 @@ export default function NewsCard({
           date={article.date}
           light
           actions={showActions}
+          size={metaSize[size]}
+          shareUrl={`/articulo/${article.slug}`}
+          shareTitle={article.title}
           className="mt-2.5"
         />
       </div>

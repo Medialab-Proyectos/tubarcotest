@@ -14,6 +14,12 @@ html {
 body {
   color: #1e1e1e;
   background: #ffffff;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark body {
+  color: #f2f2f2;
+  background: #1e1e1e;
 }
 
 @layer components {
@@ -99,4 +105,18 @@ body {
   max-width: 100%;
   border-radius: 12px;
   margin: 1.5rem 0;
+}
+
+html.dark .article-body p {
+  color: #c6c6c6;
+}
+html.dark .article-body h2,
+html.dark .article-body h3 {
+  color: #f2f2f2;
+}
+html.dark .article-body a {
+  color: #6ba8ff;
+}
+html.dark .article-body blockquote {
+  color: #aaaaaa;
 }

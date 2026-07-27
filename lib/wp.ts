@@ -153,6 +153,20 @@ export async function getPosts(params: GetPostsParams = {}): Promise<Article[]> 
   return result.data.map(normalizePost);
 }
 
+/** Slugs + fecha de los posts más recientes, sin _embed (liviano, para el sitemap). */
+export async function getRecentSlugs(
+  perPage = 100
+): Promise<{ slug: string; date: string }[]> {
+  const result = await wpFetch<Pick<WPPost, "slug" | "date">[]>("/posts", {
+    per_page: perPage,
+    _fields: "slug,date",
+    orderby: "date",
+    order: "desc",
+  });
+  if (!result) return [];
+  return result.data;
+}
+
 /** Obtiene una noticia por su slug. */
 export async function getPostBySlug(slug: string): Promise<Article | null> {
   const result = await wpFetch<WPPost[]>("/posts", {
@@ -191,6 +205,24 @@ export async function getCategoryBySlug(
   const result = await wpFetch<WPCategory[]>("/categories", { slug });
   if (!result || result.data.length === 0) return null;
   return result.data[0];
+}
+
+/** Noticias paginadas de todas las categorías (con total de páginas para el paginador). */
+export async function getPostsPaged(
+  page = 1,
+  perPage = 12
+): Promise<{ articles: Article[]; totalPages: number }> {
+  const result = await wpFetch<WPPost[]>("/posts", {
+    per_page: perPage,
+    page,
+    _embed: "wp:featuredmedia,wp:term,author",
+    _fields: LIST_FIELDS,
+  });
+  if (!result) return { articles: [], totalPages: 1 };
+  return {
+    articles: result.data.map(normalizePost),
+    totalPages: result.totalPages,
+  };
 }
 
 /** Noticias paginadas por categoría (con total de páginas para el paginador). */

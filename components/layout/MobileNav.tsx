@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/wp";
-import { SearchIcon } from "@/components/icons";
+import Logo from "./Logo";
+import SearchBox from "./SearchBox";
+import ThemeToggle from "./ThemeToggle";
 
 const REGIONS = [
   { label: "Barranquilla", href: "/categoria/tubarco-noticias-barranquilla" },
@@ -64,9 +66,7 @@ export default function MobileNav() {
       >
         <Hamburger open={open} />
       </button>
-      <button aria-label="Buscar" className="text-white">
-        <SearchIcon />
-      </button>
+      <SearchBox iconClassName="text-white" align="left" />
 
       {/* Overlay + drawer */}
       <div
@@ -80,21 +80,22 @@ export default function MobileNav() {
           aria-hidden
         />
         <nav
-          className={`absolute left-0 top-0 flex h-full w-[82%] max-w-xs flex-col bg-white shadow-2xl transition-transform duration-300 ${
+          className={`absolute left-0 top-0 flex h-full w-[82%] max-w-xs flex-col bg-white shadow-2xl transition-transform duration-300 dark:bg-ink-900 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between bg-brand-500 px-5 py-4 text-white">
-            <span className="text-lg font-semibold">
-              <span className="text-cian">TU</span>BARCO.NEWS
-            </span>
-            <button
-              aria-label="Cerrar menú"
-              onClick={() => setOpen(false)}
-              className="text-2xl leading-none"
-            >
-              ×
-            </button>
+            <Logo height={22} />
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <button
+                aria-label="Cerrar menú"
+                onClick={() => setOpen(false)}
+                className="text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -113,8 +114,8 @@ export default function MobileNav() {
                       href={item.href}
                       className={`block rounded-lg px-3 py-2.5 text-[15px] transition ${
                         active
-                          ? "bg-brand-50 font-semibold text-brand-500"
-                          : "font-medium text-ink-900 hover:bg-surface-muted"
+                          ? "bg-brand-50 font-semibold text-brand-500 dark:bg-white/10"
+                          : "font-medium text-ink-900 hover:bg-surface-muted dark:text-white/80 dark:hover:bg-white/5"
                       }`}
                     >
                       {item.label}
@@ -132,7 +133,7 @@ export default function MobileNav() {
                 <li key={r.href}>
                   <Link
                     href={r.href}
-                    className="block rounded-lg px-3 py-2.5 text-[15px] font-medium text-ink-700 transition hover:bg-surface-muted"
+                    className="block rounded-lg px-3 py-2.5 text-[15px] font-medium text-ink-700 transition hover:bg-surface-muted dark:text-white/70 dark:hover:bg-white/5"
                   >
                     {r.label}
                   </Link>
@@ -141,7 +142,7 @@ export default function MobileNav() {
             </ul>
           </div>
 
-          <div className="border-t border-ink-50 p-4">
+          <div className="border-t border-ink-50 p-4 dark:border-white/10">
             <button className="w-full rounded-pill bg-brand-500 py-3 text-sm font-medium text-white">
               Iniciar sesión
             </button>
