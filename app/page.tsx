@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIES, getPosts } from "@/lib/wp";
+import { CATEGORIES, getPosts, getVideoNews } from "@/lib/wp";
 import type { Article } from "@/lib/types";
 import HeroCarousel from "@/components/news/HeroCarousel";
 import PopularList from "@/components/news/PopularList";
@@ -15,12 +15,14 @@ export const revalidate = 300;
 
 export default async function HomePage() {
   // Carga en paralelo de los distintos feeds
-  const [latest, colombia, internacional, viral, cali] = await Promise.all([
+  const [latest, colombia, internacional, viral, cali, videos] = await Promise.all([
     getPosts({ perPage: 30 }),
     getPosts({ perPage: 4, categories: CATEGORIES.COLOMBIA.id }),
     getPosts({ perPage: 4, categories: CATEGORIES.INTERNACIONAL.id }),
     getPosts({ perPage: 5, categories: CATEGORIES.VIRAL.id }),
     getPosts({ perPage: 4, categories: CATEGORIES.CALI.id }),
+    // 5 = la nota grande + las 4 del panel "Populares".
+    getVideoNews(5, 90),
   ]);
 
   // Repartidor secuencial sobre el feed principal (evita repetir noticias)
@@ -38,8 +40,9 @@ export default async function HomePage() {
   const editorList = take(4);
   const editorRow = take(3);
   const essential = viral.length >= 4 ? viral : take(5);
-  const videoPool = latest.filter((a) => a.isVideo);
-  const videoNews = videoPool.length >= 5 ? videoPool.slice(0, 5) : take(5);
+  // Solo notas con video real: la sección se oculta si no hay suficientes,
+  // antes rellenaba con noticias normales y la sección mentía.
+  const videoNews = videos;
   const moreNews = take(7);
 
   if (hero.length === 0) {
@@ -58,6 +61,12 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* La portada no muestra un rótulo (Figma 18:3560), pero necesita un h1
+          para que buscadores y lectores de pantalla sepan qué página es. */}
+      <h1 className="sr-only">
+        Tu Barco Latinoamérica — Últimas noticias de Colombia y el mundo
+      </h1>
+
       {/* HERO + POPULARES */}
       <section className="container-tb pt-8">
         <div className="grid gap-6 lg:grid-cols-[1fr_348px]">
@@ -92,14 +101,9 @@ export default async function HomePage() {
               <div className="h-[320px] lg:h-auto">
                 <NewsCard article={editorBig} size="md" priority />
               </div>
-              <div className="flex flex-col divide-y divide-ink-50 dark:divide-white/10">
+              <div className="flex flex-col gap-4">
                 {editorList.map((a) => (
-                  <NewsListItem
-                    key={a.id}
-                    article={a}
-                    thumbWidth={180}
-                    className="py-4 first:pt-0"
-                  />
+                  <NewsListItem key={a.id} article={a} thumbWidth={180} lines={2} card />
                 ))}
               </div>
             </div>
@@ -168,7 +172,7 @@ export default async function HomePage() {
               <NewsCard article={videoNews[0]} size="lg" />
             </div>
             {videoNews.length > 1 && (
-              <aside className="rounded-card border border-ink-50 p-4 dark:border-white/10">
+              <aside className="rounded-card bg-white p-4 dark:bg-ink-800">
                 <div className="flex items-center gap-2 pb-3">
                   <FlameIcon className="text-red-500" />
                   <h3 className="text-lg font-semibold text-ink-900 dark:text-white">Populares</h3>
@@ -177,7 +181,9 @@ export default async function HomePage() {
                 <div className="flex flex-col gap-4">
                   {videoNews.slice(1, 5).map((a) => (
                     <div key={a.id} className="h-[136px]">
-                      <NewsCard article={a} size="sm" />
+                      {/* `xs` sin acciones: en 136px de alto el texto de una
+                          tarjeta normal tapaba la foto por completo. */}
+                      <NewsCard article={a} size="xs" showActions={false} />
                     </div>
                   ))}
                 </div>

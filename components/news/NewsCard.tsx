@@ -5,7 +5,7 @@ import ArticleMeta from "./ArticleMeta";
 import Badge from "./Badge";
 import { PlayIcon } from "@/components/icons";
 
-type Size = "sm" | "md" | "lg";
+type Size = "xs" | "sm" | "md" | "lg";
 
 interface Props {
   article: Article;
@@ -15,23 +15,38 @@ interface Props {
   badgeVariant?: "red" | "blue" | "cian";
   showActions?: boolean;
   priority?: boolean;
+  /** Nivel del titular. La nota de apertura de una portada va como `h2` (justo
+   *  bajo el `h1` de la página); el resto de tarjetas, como `h3`. */
+  as?: "h2" | "h3";
 }
 
 // Confirmado en Figma: 16px en tarjetas ~348px, 20px en tarjetas ~543px, 24px en el Hero (~1092px).
+// `xs` es para tarjetas bajas (136px del panel de "Novedades en video"): con el
+// tamaño `sm` el bloque de texto llenaba la tarjeta entera y tapaba la foto.
 // Máximo 2 líneas en todos los tamaños.
 const titleSize: Record<Size, string> = {
+  xs: "text-sm leading-tight line-clamp-2",
   sm: "text-base leading-snug line-clamp-2",
   md: "text-xl leading-snug line-clamp-2",
   lg: "text-2xl leading-tight line-clamp-2",
 };
 
-const metaSize: Record<Size, "sm" | "md"> = {
+const textPadding: Record<Size, string> = {
+  xs: "p-3",
+  sm: "p-4 sm:p-5",
+  md: "p-4 sm:p-5",
+  lg: "p-4 sm:p-5",
+};
+
+const metaSize: Record<Size, "xs" | "sm" | "md"> = {
+  xs: "xs",
   sm: "sm",
   md: "md",
   lg: "md",
 };
 
 const badgeSize: Record<Size, "sm" | "md"> = {
+  xs: "sm",
   sm: "sm",
   md: "md",
   lg: "md",
@@ -46,6 +61,7 @@ export default function NewsCard({
   badgeVariant = "red",
   showActions = true,
   priority = false,
+  as: Heading = "h3",
 }: Props) {
   return (
     <Link
@@ -76,26 +92,47 @@ export default function NewsCard({
         </div>
       )}
 
-      {article.isVideo && (
-        <span className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-brand-500">
-          <PlayIcon width={16} height={16} />
+      {/* Marca de plataforma: dice de dónde viene el video antes de entrar. */}
+      {article.isVideo && article.videoSource && size === "lg" && (
+        <span className="absolute left-6 top-6 flex items-center gap-2 rounded-lg bg-ink-900/80 px-3 py-2 text-sm font-medium text-white backdrop-blur">
+          <PlayIcon width={14} height={14} />
+          {article.videoSource}
         </span>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 rounded-b-card p-4 backdrop-blur-[2px] sm:p-5">
-        <h3 className={`font-semibold text-white ${titleSize[size]}`}>
-          {article.title}
-        </h3>
-        <ArticleMeta
-          category={article.category}
-          date={article.date}
-          light
-          actions={showActions}
-          size={metaSize[size]}
-          shareUrl={`/articulo/${article.slug}`}
-          shareTitle={article.title}
-          className="mt-2.5"
-        />
+      {/* En tarjetas pequeñas el play va arriba a la izquierda (Figma 83:4387);
+          en la grande, un botón de 64px junto al título (Figma 83:4368). */}
+      {article.isVideo && size !== "lg" && (
+        /* Chip tenue detrás del play: en fotos claras el ícono blanco solo
+           desaparecía y no se distinguía un video de una nota normal. */
+        <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900/55 text-white backdrop-blur-sm">
+          <PlayIcon width={13} height={13} />
+        </span>
+      )}
+
+      <div
+        className={`absolute inset-x-0 bottom-0 flex items-center gap-4 rounded-b-card backdrop-blur-[2px] ${textPadding[size]}`}
+      >
+        {article.isVideo && size === "lg" && (
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white/25 text-white backdrop-blur transition group-hover:bg-white/40">
+            <PlayIcon width={26} height={26} />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <Heading className={`font-semibold text-white ${titleSize[size]}`}>
+            {article.title}
+          </Heading>
+          <ArticleMeta
+            category={article.category}
+            date={article.date}
+            light
+            actions={showActions}
+            size={metaSize[size]}
+            shareUrl={`/articulo/${article.slug}`}
+            shareTitle={article.title}
+            className={size === "xs" ? "mt-1.5" : "mt-2.5"}
+          />
+        </div>
       </div>
     </Link>
   );

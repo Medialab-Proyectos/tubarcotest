@@ -3,15 +3,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPostBySlug, getPosts } from "@/lib/wp";
-import { cleanCategoryName, formatDate, timeAgo } from "@/lib/utils";
+import {
+  cleanCategoryName,
+  excerptRepeatsBody,
+  formatArticleDate,
+  readingTime,
+} from "@/lib/utils";
 import { SITE_LOGO, SITE_NAME, SITE_URL } from "@/lib/site";
-import Badge from "@/components/news/Badge";
 import NewsListItem from "@/components/news/NewsListItem";
 import NewsCard from "@/components/news/NewsCard";
 import SectionTitle from "@/components/news/SectionTitle";
-import ShareButton from "@/components/news/ShareButton";
+import Panel from "@/components/news/Panel";
+import AdSlot from "@/components/news/AdSlot";
+import ArticleActions from "@/components/news/ArticleActions";
 import ReadingProgress from "@/components/news/ReadingProgress";
-import { HeartIcon } from "@/components/icons";
+import Newsletter from "@/components/layout/Newsletter";
+import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
 
 export const revalidate = 300;
 
@@ -42,13 +49,22 @@ export default async function ArticlePage({ params }: Params) {
   const article = await getPostBySlug(slug);
   if (!article) notFound();
 
-  const related = (
-    await getPosts({
-      perPage: 5,
-      categories: undefined,
-      exclude: [article.id],
-    })
-  ).slice(0, 4);
+  const [related, sameCategory] = await Promise.all([
+    getPosts({ perPage: 9, exclude: [article.id] }),
+    // "Populares en {categoría}" tiene que traer de esa categoría de verdad.
+    article.categoryId
+      ? getPosts({
+          perPage: 4,
+          categories: article.categoryId,
+          exclude: [article.id],
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const category = cleanCategoryName(article.category);
+  const popular = (sameCategory.length > 0 ? sameCategory : related).slice(0, 4);
+  const moreNews = related.slice(0, 5);
+  const minutes = readingTime(article.content);
 
   const articleUrl = `${SITE_URL}/articulo/${slug}`;
   const articleJsonLd = {
@@ -76,7 +92,7 @@ export default async function ArticlePage({ params }: Params) {
       {
         "@type": "ListItem",
         position: 2,
-        name: cleanCategoryName(article.category),
+        name: category,
         item: article.categorySlug
           ? `${SITE_URL}/categoria/${article.categorySlug}`
           : undefined,
@@ -86,7 +102,7 @@ export default async function ArticlePage({ params }: Params) {
   };
 
   return (
-    <article className="container-tb py-10">
+    <>
       <ReadingProgress />
       <script
         type="application/ld+json"
@@ -99,96 +115,180 @@ export default async function ArticlePage({ params }: Params) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
-      {/* Migas */}
-      <nav className="mb-6 flex items-center gap-2 text-sm text-ink-300 dark:text-white/40">
-        <Link href="/" className="hover:text-brand-500">Inicio</Link>
-        <span>/</span>
-        {article.categorySlug ? (
-          <Link
-            href={`/categoria/${article.categorySlug}`}
-            className="hover:text-brand-500"
-          >
-            {cleanCategoryName(article.category)}
-          </Link>
-        ) : (
-          <span>{cleanCategoryName(article.category)}</span>
+      <article className="container-tb pt-8">
+        {/* FOTO DE APERTURA a todo el ancho (Figma 298:7290) */}
+        {article.image && (
+          <div className="relative h-[220px] w-full overflow-hidden rounded-card bg-ink-50 dark:bg-ink-800 lg:h-[392px]">
+            <Image
+              src={article.image}
+              alt={article.imageAlt}
+              fill
+              sizes="(max-width: 1024px) 100vw, 1464px"
+              className="object-cover"
+              priority
+            />
+          </div>
         )}
-      </nav>
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
-        <div className="min-w-0">
-          <Badge variant="red" icon="boat" shape="pill">
-            {cleanCategoryName(article.category)}
-          </Badge>
-
-          <h1 className="mt-4 text-3xl font-semibold leading-tight text-ink-900 dark:text-white sm:text-[42px]">
-            {article.title}
-          </h1>
-
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-ink-50 pb-5 text-sm text-ink-400 dark:border-white/10 dark:text-white/50">
-            <span className="font-medium text-ink-700 dark:text-white/80">{article.author}</span>
-            <span className="h-4 w-px bg-ink-100 dark:bg-white/10" />
-            <span>{formatDate(article.date)}</span>
-            <span className="text-ink-200 dark:text-white/30">· {timeAgo(article.date)}</span>
-            <span className="ml-auto flex items-center gap-3">
-              <button aria-label="Me gusta" className="flex items-center gap-1.5 rounded-pill border border-ink-50 px-3 py-1.5 transition hover:text-brand-500 dark:border-white/10">
-                <HeartIcon width={18} height={18} />
-              </button>
-              <ShareButton
-                title={article.title}
-                className="flex items-center gap-1.5 rounded-pill border border-ink-50 px-3 py-1.5 transition hover:text-brand-500 dark:border-white/10"
-              />
+        {/* VOLVER + MIGA */}
+        <nav className="mt-6 flex items-center gap-4 text-sm">
+          <Link
+            href="/noticias"
+            aria-label="Volver a las noticias"
+            className="flex h-9 w-[42px] shrink-0 items-center justify-center rounded-lg border border-ink-100 text-ink-700 transition hover:border-brand-500 hover:text-brand-500 active:scale-95 dark:border-white/15 dark:text-white/80"
+          >
+            <ArrowLeftIcon width={18} height={18} />
+          </Link>
+          <div className="flex min-w-0 items-center gap-2 text-ink-400 dark:text-white/40">
+            <Link href="/" className="shrink-0 transition hover:text-brand-500">
+              Inicio
+            </Link>
+            <span aria-hidden>/</span>
+            {article.categorySlug ? (
+              <Link
+                href={`/categoria/${article.categorySlug}`}
+                className="shrink-0 transition hover:text-brand-500"
+              >
+                {category}
+              </Link>
+            ) : (
+              <span className="shrink-0">{category}</span>
+            )}
+            <span aria-hidden>/</span>
+            <span className="truncate text-ink-400 dark:text-white/50">
+              {article.title}
             </span>
           </div>
+        </nav>
 
-          {article.image && (
-            <div className="relative mt-6 aspect-[16/9] w-full overflow-hidden rounded-card bg-ink-50 dark:bg-ink-800">
-              <Image
-                src={article.image}
-                alt={article.imageAlt}
-                fill
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
-
-          <div
-            className="article-body mt-8 max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
-        </div>
-
-        {/* Sidebar relacionadas */}
-        <aside className="lg:border-l lg:border-ink-50 dark:lg:border-white/10 lg:pl-8">
-          <div className="sticky top-56">
-            <div className="flex items-center gap-2 pb-4">
-              <span className="h-1 w-8 rounded-full bg-brand-500 dark:bg-brand-100" />
-              <h3 className="text-lg font-semibold text-ink-900 dark:text-white">Lo último</h3>
-            </div>
-            <div className="flex flex-col divide-y divide-ink-50 dark:divide-white/10">
-              {related.map((a) => (
-                <NewsListItem key={a.id} article={a} className="py-3.5" />
-              ))}
-            </div>
+        {/* TITULAR + DATOS */}
+        <header className="mt-8">
+          <h1 className="font-heading text-[28px] font-medium leading-tight text-ink-900 dark:text-white lg:text-[36px]">
+            {article.title}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-base text-ink-400 dark:text-white/50 lg:text-xl">
+            <span className="flex-1 whitespace-nowrap">
+              {formatArticleDate(article.date)}
+            </span>
+            <span className="flex items-center gap-3 whitespace-nowrap">
+              <ClockIcon width={20} height={20} />
+              {minutes} minutos de lectura
+            </span>
+            <span aria-hidden>|</span>
+            {article.categorySlug ? (
+              <Link
+                href={`/categoria/${article.categorySlug}`}
+                className="font-semibold text-brand-500 transition hover:underline dark:text-brand-100"
+              >
+                {category}
+              </Link>
+            ) : (
+              <span className="font-semibold text-brand-500 dark:text-brand-100">
+                {category}
+              </span>
+            )}
           </div>
-        </aside>
-      </div>
+        </header>
 
-      {/* Relacionadas grid */}
-      {related.length > 0 && (
-        <section className="mt-16">
-          <SectionTitle title="También te puede interesar" />
-          <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {related.map((a) => (
-              <div key={a.id} className="h-[296px]">
-                <NewsCard article={a} size="sm" />
+        {/* ENTRADILLA — solo si aporta algo que el cuerpo no repita */}
+        {article.excerpt && !excerptRepeatsBody(article.excerpt, article.content) && (
+          <p className="mt-8 text-lg leading-relaxed text-ink-700 dark:text-white/70 lg:text-2xl">
+            {article.excerpt}
+          </p>
+        )}
+        <hr className="mt-8 border-ink-50 dark:border-white/10" />
+
+        {/* ACCIONES · CUERPO · LATERAL */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-[56px_1fr_348px] lg:gap-[68px]">
+          <div className="lg:w-14">
+            <ArticleActions slug={slug} title={article.title} />
+          </div>
+
+          {/* pb en móvil: deja sitio a la barra flotante de acciones */}
+          <div className="min-w-0 pb-20 lg:pb-0">
+            <div
+              className="article-body max-w-none"
+              /* El HTML viene de WordPress y trae nodos que el navegador
+                 reubica al parsear (un <div> dentro de un <p>, un <script> de
+                 Instagram). Eso hacía que el DOM real no coincidiera con el
+                 renderizado en servidor y React registrara un error de
+                 hidratación en cada nota. Es la vía prevista para HTML de
+                 terceros: no se puede corregir el marcado desde aquí. */
+              suppressHydrationWarning
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
+            <p
+              id="comentarios"
+              className="mt-10 rounded-card bg-white p-6 text-sm text-ink-400 dark:bg-ink-800 dark:text-white/50"
+            >
+              Los comentarios estarán disponibles próximamente.
+            </p>
+          </div>
+
+          <aside className="flex flex-col gap-6">
+            <AdSlot height="h-[260px] lg:h-[305px]" />
+            {popular.length > 0 && (
+              <Panel
+                title={`Populares en ${category}`}
+                icon={<FlameIcon className="shrink-0 text-red-500" />}
+              >
+                <div className="flex flex-col gap-4">
+                  {popular.map((a) => (
+                    <NewsListItem key={a.id} article={a} />
+                  ))}
+                </div>
+              </Panel>
+            )}
+            <AdSlot height="h-[260px] lg:h-[492px]" />
+          </aside>
+        </div>
+      </article>
+
+      <section className="container-tb mt-14">
+        <AdSlot />
+      </section>
+
+      {/* MÁS NOTICIAS */}
+      {moreNews.length > 0 && (
+        <section className="container-tb mt-6">
+          <SectionTitle title="Más noticias" />
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_348px]">
+            <div>
+              <div className="grid gap-6 lg:grid-cols-[714px_1fr]">
+                <div className="h-[260px] lg:h-[320px]">
+                  <NewsCard article={moreNews[0]} size="md" />
+                </div>
+                {moreNews[1] && (
+                  <div className="h-[260px] lg:h-[320px]">
+                    <NewsCard article={moreNews[1]} size="sm" />
+                  </div>
+                )}
               </div>
-            ))}
+              {moreNews.length > 2 && (
+                <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {moreNews.slice(2, 5).map((a) => (
+                    <div key={a.id} className="h-[260px] lg:h-[320px]">
+                      <NewsCard article={a} size="sm" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <AdSlot height="h-[260px] lg:h-full lg:min-h-[664px]" />
           </div>
         </section>
       )}
-    </article>
+
+      <div className="container-tb mt-6 flex justify-center py-6">
+        <Link
+          href="/noticias"
+          className="rounded-pill border border-brand-500 px-6 py-3 text-lg font-medium text-brand-500 transition hover:bg-brand-500/5 active:scale-95 dark:border-brand-100 dark:text-brand-100"
+        >
+          Ver más noticias
+        </Link>
+      </div>
+
+      <Newsletter />
+    </>
   );
 }

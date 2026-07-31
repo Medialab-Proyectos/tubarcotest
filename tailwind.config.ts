@@ -20,6 +20,8 @@ const config: Config = {
           DEFAULT: "#0001F6",
         },
         cian: "#04C8FE",
+        // Foundation/Correct/700 — indicadores positivos (dólar al alza)
+        correct: "#6DB500",
         // Red
         red: {
           500: "#FF0100",
@@ -40,7 +42,7 @@ const config: Config = {
         },
         surface: {
           DEFAULT: "#FFFFFF",
-          muted: "#F2F3F5",
+          muted: "#F0F3F6",
           soft: "#F2EEF6",
         },
       },

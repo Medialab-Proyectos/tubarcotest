@@ -41,24 +41,44 @@ export const CATEGORIES = {
   },
 } as const;
 
-// Menú de navegación principal (basado en categorías reales)
-export const NAV_ITEMS = [
-  { label: "Inicio", href: "/" },
-  { label: "Colombia", href: "/categoria/tubarco-noticias-colombia" },
-  { label: "Cali", href: "/categoria/tubarco-noticias-cali" },
-  { label: "Caribe", href: "/categoria/tubarco-noticias-caribe" },
-  { label: "Valle", href: "/categoria/tubarco-noticias-valle" },
-  { label: "Bogotá", href: "/categoria/tu-barco-bogota" },
-  { label: "Internacional", href: "/categoria/tubarco-noticias-internacional" },
-  { label: "Viral", href: "/categoria/viral" },
+/** Secciones temáticas del menú — Figma 18:3563 y sus seis portadas
+ *  (270:1703 Geopolítica, 270:3210 Ciencia, 270:4717 Economía, 293:2759 Mundo,
+ *  297:4269 Migración, 297:5776 Especiales), que comparten plantilla.
+ *
+ *  WordPress solo tiene categoría propia para Mundo (Internacional) y
+ *  Especiales; el resto resuelve contra el buscador del sitio. Volumen real al
+ *  31-07-2026: Geopolítica 24 · Ciencia 1.591 · Economía 1.353 · Mundo 3.116 ·
+ *  Migración 418 · Especiales 96. Geopolítica es la única que se queda corta y
+ *  por eso su portada muestra menos bloques: la solución de fondo es crear la
+ *  categoría en WordPress y apuntarla aquí con `categoryId`. */
+export const SECTIONS = [
+  { slug: "geopolitica", label: "Geopolítica", search: "geopolítica" },
+  { slug: "ciencia", label: "Ciencia", search: "ciencia" },
+  { slug: "economia", label: "Economía", search: "economía" },
+  { slug: "mundo", label: "Mundo", categoryId: 35616 },
+  { slug: "migracion", label: "Migración", search: "migración" },
+  { slug: "especiales", label: "Especiales", categoryId: 227391 },
 ] as const;
 
+export type Section = (typeof SECTIONS)[number];
+
+export function getSection(slug: string): Section | undefined {
+  return SECTIONS.find((s) => s.slug === slug);
+}
+
+// Menú de navegación principal — los 8 rótulos del Figma (18:3563)
+export const NAV_ITEMS = [
+  { label: "Inicio", href: "/" },
+  { label: "Últimas noticias", href: "/noticias" },
+  ...SECTIONS.map((s) => ({ label: s.label, href: `/seccion/${s.slug}` })),
+] as const;
+
+/** Tags populares — los 4 chips del Figma (103:971), mismo criterio de destino. */
 export const TAG_ITEMS = [
-  { label: "Cali", href: "/categoria/tubarco-noticias-cali" },
-  { label: "Barranquilla", href: "/categoria/tubarco-noticias-barranquilla" },
-  { label: "Nariño", href: "/categoria/tubarco-noticias-narino-tubarco-noticias-occidente" },
-  { label: "Antioquia", href: "/categoria/tubarco-antioquia" },
-  { label: "Entretenimiento", href: "/categoria/entretenimiento" },
+  { label: "Deportes", href: "/categoria/deportes" },
+  { label: "Tecnología", href: "/categoria/tecnologia" },
+  { label: "Debate presidencial", href: "/buscar?q=debate%20presidencial" },
+  { label: "Videojuegos", href: "/buscar?q=videojuegos" },
 ] as const;
 
 interface GetPostsParams {
@@ -67,6 +87,9 @@ interface GetPostsParams {
   categories?: number | number[];
   search?: string;
   exclude?: number[];
+  /** Incluye `content` para poder detectar videos incrustados. Encarece el
+   *  payload (~6 KB por nota), así que solo se usa en listas cortas. */
+  withContent?: boolean;
 }
 
 async function wpFetch<T>(
@@ -115,8 +138,13 @@ function normalizePost(post: WPPost): Article {
   const author = post._embedded?.author?.[0];
 
   const rawContent = post.content?.rendered ?? "";
-  const isVideo =
-    post.format === "video" || VIDEO_HOSTS.some((h) => rawContent.includes(h));
+  const host = VIDEO_HOSTS.find((h) => rawContent.includes(h));
+  const isVideo = post.format === "video" || Boolean(host);
+  const videoSource = host
+    ? host.startsWith("vimeo")
+      ? ("Vimeo" as const)
+      : ("YouTube" as const)
+    : undefined;
 
   return {
     id: post.id,
@@ -129,19 +157,21 @@ function normalizePost(post: WPPost): Article {
     imageAlt: media?.alt_text || stripHtml(post.title?.rendered ?? ""),
     category: term?.name ?? "Noticias",
     categorySlug: term?.slug ?? "",
+    categoryId: term?.id ?? null,
     author: author?.name ?? "Tu Barco",
     isVideo,
+    videoSource,
   };
 }
 
 /** Obtiene una lista de noticias normalizadas. */
 export async function getPosts(params: GetPostsParams = {}): Promise<Article[]> {
-  const { perPage = 10, page = 1, categories, search, exclude } = params;
+  const { perPage = 10, page = 1, categories, search, exclude, withContent } = params;
   const result = await wpFetch<WPPost[]>("/posts", {
     per_page: perPage,
     page,
     _embed: "wp:featuredmedia,wp:term,author",
-    _fields: LIST_FIELDS,
+    _fields: withContent ? `${LIST_FIELDS},content` : LIST_FIELDS,
     categories: Array.isArray(categories) ? categories.join(",") : categories,
     search,
     exclude: exclude?.join(","),
@@ -183,7 +213,92 @@ export async function getPostBySlug(slug: string): Promise<Article | null> {
  * instala un plugin de popularidad (p. ej. orderby=views), se ajusta aquí.
  */
 export async function getPopular(perPage = 4): Promise<Article[]> {
-  return getPosts({ perPage });
+  // withContent: son pocas notas y así la miniatura puede marcar los videos.
+  return getPosts({ perPage, withContent: true });
+}
+
+/**
+ * Noticias con video incrustado, para la sección "Novedades en video".
+ * El formato de WordPress en tubarco.news siempre es `standard` y no hay
+ * categoría de videos, así que el único marcador fiable es el iframe en el
+ * `content`: se piden las últimas notas con contenido y se filtran.
+ *
+ * El barrido se parte en páginas de 30 porque traer el `content` engorda mucho
+ * la respuesta y Next deja de cachear a partir de 2 MB (con 40 notas ya se
+ * pasaba). Varias peticiones pequeñas sí se cachean y además van en paralelo.
+ */
+export async function getVideoNews(limit = 5, pool = 60): Promise<Article[]> {
+  const PER_PAGE = 30;
+  const pages = Math.max(1, Math.ceil(pool / PER_PAGE));
+
+  const batches = await Promise.all(
+    Array.from({ length: pages }, (_, i) =>
+      getPosts({ perPage: PER_PAGE, page: i + 1, withContent: true })
+    )
+  );
+
+  const videos: Article[] = [];
+  for (const batch of batches) {
+    for (const article of batch) {
+      if (article.isVideo && !videos.some((v) => v.id === article.id)) {
+        videos.push(article);
+        if (videos.length === limit) return videos;
+      }
+    }
+  }
+  return videos;
+}
+
+/** Parámetros de consulta de una sección: por categoría o por búsqueda. */
+function sectionQuery(section: Section): GetPostsParams {
+  return "categoryId" in section
+    ? { categories: section.categoryId }
+    : { search: section.search };
+}
+
+/** Feed de una sección temática del menú (Geopolítica, Ciencia, Mundo…). */
+export async function getSectionPosts(
+  section: Section,
+  perPage = 40,
+  page = 1
+): Promise<Article[]> {
+  return getPosts({ ...sectionQuery(section), perPage, page });
+}
+
+/** Notas con video dentro de una sección, para su bloque "Últimos videos". */
+export async function getSectionVideos(
+  section: Section,
+  limit = 3,
+  pool = 20
+): Promise<Article[]> {
+  const recent = await getPosts({
+    ...sectionQuery(section),
+    perPage: pool,
+    withContent: true,
+  });
+  return recent.filter((a) => a.isVideo).slice(0, limit);
+}
+
+/** Sección paginada, para las páginas 2+ del listado. */
+export async function getSectionPaged(
+  section: Section,
+  page = 1,
+  perPage = 24
+): Promise<{ articles: Article[]; totalPages: number }> {
+  const q = sectionQuery(section);
+  const result = await wpFetch<WPPost[]>("/posts", {
+    per_page: perPage,
+    page,
+    categories: q.categories as number | undefined,
+    search: q.search,
+    _embed: "wp:featuredmedia,wp:term,author",
+    _fields: LIST_FIELDS,
+  });
+  if (!result) return { articles: [], totalPages: 1 };
+  return {
+    articles: result.data.map(normalizePost),
+    totalPages: result.totalPages,
+  };
 }
 
 /** Lista las categorías con más publicaciones. */

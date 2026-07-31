@@ -1,5 +1,6 @@
 import type { Article } from "@/lib/types";
 import NewsListItem from "./NewsListItem";
+import Panel from "./Panel";
 import { FlameIcon } from "@/components/icons";
 
 interface Props {
@@ -8,23 +9,24 @@ interface Props {
   className?: string;
 }
 
+/** Panel "Populares" — Figma 51:2455. Lista vertical de notas con miniatura. */
 export default function PopularList({
   articles,
   title = "Populares",
   className = "",
 }: Props) {
   return (
-    <aside className={`rounded-card border border-ink-50 p-4 dark:border-white/10 ${className}`}>
-      <div className="flex items-center gap-2 pb-3">
-        <FlameIcon className="text-red-500" />
-        <h3 className="text-lg font-semibold text-ink-900 dark:text-white">{title}</h3>
-        <span className="ml-2 h-px flex-1 bg-ink-100 dark:bg-white/10" />
-      </div>
-      <div className="flex flex-col divide-y divide-ink-50 dark:divide-white/10">
+    <Panel
+      title={title}
+      icon={<FlameIcon className="shrink-0 text-red-500" />}
+      className={className}
+    >
+      {/* Sin líneas divisorias: el diseño separa las notas solo con aire. */}
+      <div className="flex flex-col gap-4">
         {articles.map((article) => (
-          <NewsListItem key={article.id} article={article} className="py-3.5" />
+          <NewsListItem key={article.id} article={article} />
         ))}
       </div>
-    </aside>
+    </Panel>
   );
 }

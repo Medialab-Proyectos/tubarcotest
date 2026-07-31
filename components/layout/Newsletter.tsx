@@ -21,9 +21,14 @@ export default function Newsletter() {
           <form className="relative z-10 mx-auto mt-8 flex max-w-xl items-center gap-3 rounded-pill border border-surface-soft bg-white py-1 pl-4 pr-1 focus-within:ring-2 focus-within:ring-brand-500/40 sm:py-1">
             <input
               type="email"
+              name="email"
               required
+              autoComplete="email"
+              inputMode="email"
+              aria-label="Correo electrónico"
               placeholder="Escribe tu correo electrónico"
-              className="min-w-0 flex-1 bg-transparent py-2.5 text-sm text-ink-400 outline-none placeholder:text-ink-400 sm:text-base"
+              /* 16px en móvil: por debajo, iOS hace zoom al enfocar el campo. */
+              className="min-w-0 flex-1 bg-transparent py-2.5 text-base text-ink-700 outline-none placeholder:text-ink-400"
             />
             <button
               type="submit"

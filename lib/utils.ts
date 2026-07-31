@@ -72,11 +72,62 @@ export function formatDate(dateString: string): string {
   });
 }
 
-/** Limpia el nombre de categoría del prefijo "TUBARCO"/"TU BARCO". */
+/** Fecha del encabezado de la nota: "Junio 20, 2026" (Figma 320:3996). */
+export function formatArticleDate(dateString: string): string {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  const month = date.toLocaleDateString("es-CO", { month: "long" });
+  return `${month.charAt(0).toLocaleUpperCase("es")}${month.slice(1)} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+/** Minutos de lectura estimados a 200 palabras/minuto sobre el HTML de la nota. */
+export function readingTime(html: string): number {
+  const words = stripHtml(html).split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/** ¿La entradilla es solo el arranque del cuerpo?
+ *  WordPress arma el `excerpt` recortando el primer párrafo, así que pintar la
+ *  entradilla y el cuerpo repite el mismo texto dos veces seguidas. */
+export function excerptRepeatsBody(excerpt: string, content: string): boolean {
+  const norm = (s: string) =>
+    stripHtml(s)
+      .replace(/[…\.\s]+$/, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLocaleLowerCase("es");
+
+  const lead = norm(excerpt);
+  if (!lead) return true;
+  return norm(content).startsWith(lead.slice(0, Math.min(lead.length, 120)));
+}
+
+/** Limpia el nombre de categoría del prefijo "TUBARCO"/"TU BARCO".
+ *  En WordPress están escritas en mayúsculas ("TUBARCO CALI"), pero el diseño
+ *  las muestra capitalizadas ("Cali"), así que solo se pasa a minúsculas cuando
+ *  el nombre viene todo en mayúsculas — de lo contrario se respeta como está
+ *  para no romper siglas ni nombres mixtos (COP16, RDF2023). */
 export function cleanCategoryName(name: string): string {
-  return name
+  const clean = name
     .replace(/^TU\s?BARCO\s+/i, "")
     .replace(/^TUBARCO\s+/i, "")
-    .trim()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .trim();
+
+  const isAllCaps = clean === clean.toUpperCase() && /\p{Lu}/u.test(clean);
+  if (!isAllCaps) return clean;
+
+  // Palabra por palabra: las que llevan dígitos son siglas (COP16, RDF2023) y
+  // se dejan intactas; el resto se capitaliza.
+  return clean
+    .split(/(\s+)/)
+    .map((word) =>
+      /\d/.test(word)
+        ? word
+        : word.replace(
+            /^(\p{L})(.*)$/u,
+            (_, first: string, rest: string) =>
+              first.toLocaleUpperCase("es") + rest.toLocaleLowerCase("es")
+          )
+    )
+    .join("");
 }

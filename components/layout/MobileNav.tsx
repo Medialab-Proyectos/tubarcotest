@@ -99,7 +99,7 @@ export default function MobileNav() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-4">
-            <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-ink-300">
+            <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
               Secciones
             </p>
             <ul className="mb-6">
@@ -112,6 +112,7 @@ export default function MobileNav() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      aria-current={active ? "page" : undefined}
                       className={`block rounded-lg px-3 py-2.5 text-[15px] transition ${
                         active
                           ? "bg-brand-50 font-semibold text-brand-500 dark:bg-white/10"
@@ -125,7 +126,7 @@ export default function MobileNav() {
               })}
             </ul>
 
-            <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-ink-300">
+            <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
               Más regiones
             </p>
             <ul>

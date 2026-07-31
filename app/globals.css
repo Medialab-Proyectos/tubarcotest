@@ -3,23 +3,90 @@
 @tailwind utilities;
 
 :root {
-  --container-pad: clamp(16px, 5vw, 132px);
+  /* El Figma trabaja sobre un lienzo de 1728px con 132px de margen lateral
+     (contenido de 1464px). 132/1728 = 7.64vw, así el margen coincide
+     exactamente con el diseño en pantallas grandes y se reduce en móvil. */
+  --container-pad: clamp(16px, 7.64vw, 132px);
+
+  /* Alto del header fijo. Único lugar donde vive este número: cualquier
+     elemento `sticky` lo usa para no quedar debajo del header y cortarse.
+     En móvil el header no es sticky, así que vale 0. */
+  --header-h: 0px;
+  --header-h-article: 0px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* NavBar 88 + Menu 68 + tags 54 */
+    --header-h: 210px;
+    /* En la nota el diseño oculta los tags (Figma 298:8402): 88 + 68 */
+    --header-h-article: 156px;
+  }
 }
 
 html {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* El header es sticky en escritorio: evita que los anclajes queden debajo. */
+  scroll-padding-top: calc(var(--header-h) + 24px);
+}
+
+/* Aro de foco visible solo para teclado (no al hacer clic con el mouse). */
+:focus-visible {
+  outline: 2px solid #0001f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+html.dark :focus-visible {
+  outline-color: #04c8fe;
+}
+
+/* Respuesta táctil: en móvil el dedo tapa el elemento, así que la única
+   confirmación de "sí, registré tu toque" es este micro-hundido. */
+@media (hover: none) {
+  a:active,
+  button:active {
+    transform: scale(0.985);
+  }
+  a,
+  button {
+    transition: transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Accesibilidad: quien pida menos movimiento no recibe animaciones. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
   color: #1e1e1e;
-  background: #ffffff;
+  /* El lienzo del Figma es gris (#F0F3F6) en toda la home: las listas y
+     paneles son tarjetas blancas encima, no el fondo de la página. */
+  background: #f0f3f6;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 html.dark body {
   color: #f2f2f2;
   background: #1e1e1e;
+}
+
+@layer base {
+  /* Las rejillas que solo declaran columnas a partir de `sm:`/`lg:` usan en
+     móvil una columna implícita `auto`, que no puede encogerse por debajo del
+     contenido de las tarjetas y desbordaba la pantalla a 320px. */
+  .grid {
+    grid-auto-columns: minmax(0, 1fr);
+  }
 }
 
 @layer components {
@@ -76,9 +143,43 @@ html.dark body {
 }
 .article-body img {
   border-radius: 12px;
-  margin: 1.5rem 0;
+  margin: 1.5rem auto;
+  display: block;
   max-width: 100%;
   height: auto;
+}
+/* WordPress escribe anchos en línea (style="width:442px") al redimensionar una
+   foto en el editor. En la columna de 924px eso dejaba la imagen diminuta y
+   pegada a la izquierda; se ignora el ancho fijo y se centra. */
+.article-body figure.is-resized img,
+.article-body img[style*="width"] {
+  width: auto !important;
+}
+/* Galerías: sin la hoja del editor, `is-layout-flex` apilaba las fotos sin
+   orden. Se reparten en columnas que se adaptan al ancho disponible. */
+.article-body .wp-block-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
+  margin: 1.5rem 0;
+  list-style: none;
+  padding: 0;
+}
+.article-body .wp-block-gallery figure {
+  margin: 0;
+}
+.article-body .wp-block-gallery img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.article-body figcaption {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6c6c6c;
 }
 .article-body ul,
 .article-body ol {
@@ -102,9 +203,34 @@ html.dark body {
   margin: 1.5rem 0;
 }
 .article-body iframe {
+  display: block;
+  width: 100%;
   max-width: 100%;
   border-radius: 12px;
-  margin: 1.5rem 0;
+  margin: 1.5rem auto;
+}
+/* Publicaciones incrustadas de Instagram/Facebook. Los scripts oficiales de
+   esas redes no se cargan (son de terceros), así que WordPress deja el bloque
+   de respaldo: se le da forma de tarjeta centrada para que se lea como un
+   enlace a la publicación y no como un hueco roto. */
+.article-body .instagram-media,
+.article-body .fb-post,
+.article-body .twitter-tweet {
+  margin: 1.5rem auto !important;
+  max-width: 540px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  border: 1px solid #c6c6c6 !important;
+  border-radius: 12px !important;
+  padding: 1rem !important;
+  box-shadow: none !important;
+  font-style: normal;
+  color: inherit;
+}
+html.dark .article-body .instagram-media,
+html.dark .article-body .fb-post,
+html.dark .article-body .twitter-tweet {
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 html.dark .article-body p {

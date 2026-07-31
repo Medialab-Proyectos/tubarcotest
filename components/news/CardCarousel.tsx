@@ -25,9 +25,23 @@ export default function CardCarousel({
     return card ? card.offsetWidth + 24 : 0; // + gap-6
   };
 
+  /* Cíclico: al pasar la última tarjeta vuelve a la primera (y al revés). Antes
+     la flecha se quedaba muerta en el extremo y parecía que el carrusel se
+     había roto. */
   const scroll = (dir: number) => {
     const el = trackRef.current;
     if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const tolerance = 4; // el scroll suele quedar en decimales
+
+    if (dir > 0 && el.scrollLeft >= max - tolerance) {
+      el.scrollTo({ left: 0, behavior: "smooth" });
+      return;
+    }
+    if (dir < 0 && el.scrollLeft <= tolerance) {
+      el.scrollTo({ left: max, behavior: "smooth" });
+      return;
+    }
     el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: "smooth" });
   };
 

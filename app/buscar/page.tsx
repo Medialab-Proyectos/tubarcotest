@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getPosts } from "@/lib/wp";
+import Link from "next/link";
+import { getPosts, NAV_ITEMS, TAG_ITEMS } from "@/lib/wp";
 import NewsCard from "@/components/news/NewsCard";
 import { SearchIcon } from "@/components/icons";
 
@@ -29,20 +30,27 @@ export default async function SearchPage({ searchParams }: Props) {
           </h1>
         </div>
 
-        <form action="/buscar" className="mt-6 flex max-w-lg items-center gap-2 rounded-pill border border-ink-100 bg-white p-1.5 pl-4 shadow-card focus-within:ring-2 focus-within:ring-brand-500/40 dark:border-white/10 dark:bg-ink-800">
+        <form
+          action="/buscar"
+          className="mt-6 flex max-w-lg items-center gap-2 rounded-pill border border-ink-100 bg-white pl-4 shadow-card focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/30 dark:border-white/10 dark:bg-ink-800"
+        >
           <input
             type="search"
             name="q"
             defaultValue={query}
             placeholder="Buscar noticias..."
-            className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-300 dark:text-white dark:placeholder:text-white/40"
+            inputMode="search"
+            enterKeyHint="search"
+            aria-label="Términos de búsqueda"
+            /* 16px: por debajo de eso iOS hace zoom al enfocar el campo */
+            className="h-12 min-w-0 flex-1 bg-transparent text-base text-ink-900 outline-none focus-visible:outline-none placeholder:text-ink-400 dark:text-white dark:placeholder:text-white/40"
           />
           <button
             type="submit"
             aria-label="Buscar"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition hover:bg-brand-700"
+            className="mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition hover:bg-brand-700 active:scale-95"
           >
-            <SearchIcon width={16} height={16} />
+            <SearchIcon width={18} height={18} />
           </button>
         </form>
 
@@ -53,22 +61,47 @@ export default async function SearchPage({ searchParams }: Props) {
         )}
       </header>
 
-      {!query ? (
-        <p className="py-16 text-center text-ink-400 dark:text-white/50">
-          Escribe algo para buscar entre nuestras noticias.
-        </p>
-      ) : articles.length === 0 ? (
-        <p className="py-16 text-center text-ink-400 dark:text-white/50">
-          No encontramos noticias para &ldquo;{query}&rdquo;.
-        </p>
+      {!query || articles.length === 0 ? (
+        /* Nunca dejar al lector en un callejón sin salida: si no hay resultados
+           (o todavía no buscó), ofrecerle por dónde seguir. */
+        <div className="py-12">
+          <p className="text-ink-400 dark:text-white/50">
+            {query
+              ? `No encontramos noticias para “${query}”. Prueba con otros términos o entra por estos temas:`
+              : "Escribe algo para buscar entre nuestras noticias, o entra por los temas del momento:"}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {TAG_ITEMS.map((tag) => (
+              <Link
+                key={tag.href}
+                href={tag.href}
+                className="rounded-pill bg-brand-500/5 px-4 py-2 text-sm font-medium text-brand-900 transition hover:bg-brand-500/10 dark:bg-white/10 dark:text-brand-100"
+              >
+                #{tag.label}
+              </Link>
+            ))}
+            {NAV_ITEMS.filter((i) => i.href !== "/").map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-pill border border-ink-100 px-4 py-2 text-sm font-medium text-ink-700 transition hover:border-brand-500 hover:text-brand-500 dark:border-white/15 dark:text-white/80"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {/* Encabezado intermedio: sin él se saltaba de h1 a los h3 de las
+              tarjetas y el lector de pantalla perdía el nivel. */}
+          <h2 className="sr-only">Resultados de la búsqueda</h2>
           {articles.map((a) => (
             <div key={a.id} className="h-[320px]">
               <NewsCard article={a} size="sm" />
             </div>
           ))}
-        </div>
+        </section>
       )}
     </div>
   );

@@ -58,7 +58,7 @@ export default function HeroCarousel({ articles }: Props) {
       <div className="absolute inset-0 bg-gradient-to-t from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%" />
 
       <div className="absolute left-0 top-6">
-        <Badge variant="red" icon="boat">
+        <Badge variant="red" icon="boat" live>
           Últimas noticias
         </Badge>
       </div>

@@ -80,6 +80,10 @@ export interface Article {
   imageAlt: string;
   category: string;
   categorySlug: string;
+  /** Id de la categoría principal, para pedir "más de lo mismo" a la API. */
+  categoryId: number | null;
   author: string;
   isVideo: boolean;
+  /** Plataforma del video incrustado, cuando se pudo determinar. */
+  videoSource?: "YouTube" | "Vimeo";
 }

@@ -14,7 +14,7 @@ const poppins = Poppins({
 
 const oswald = Oswald({
   subsets: ["latin"],
-  weight: ["500"],
+  weight: ["400", "500", "600"],
   variable: "--font-oswald",
   display: "swap",
 });
@@ -90,8 +90,16 @@ export default function RootLayout({
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
+        {/* Primer elemento enfocable: con teclado o lector de pantalla evita
+            tener que recorrer los ~15 enlaces del header en cada página. */}
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-pill focus:bg-brand-500 focus:px-5 focus:py-3 focus:text-sm focus:font-medium focus:text-white"
+        >
+          Saltar al contenido
+        </a>
         <SiteHeader />
-        <main>{children}</main>
+        <main id="contenido">{children}</main>
         <Footer />
       </body>
     </html>

@@ -1,12 +1,13 @@
 "use client";
 
 import { cleanCategoryName, timeAgo } from "@/lib/utils";
-import { HeartIcon } from "@/components/icons";
+import { ThumbUpIcon } from "@/components/icons";
 import ShareButton from "./ShareButton";
 
-type Size = "sm" | "md";
+type Size = "xs" | "sm" | "md";
 
 const textSize: Record<Size, string> = {
+  xs: "text-xs", // 12px — tarjetas bajas (136px) donde el texto tapaba la foto
   sm: "text-sm", // 14px — tarjetas de ~348px (grid, Imprescindible, etc.)
   md: "text-base", // 16px — Hero y tarjetas grandes (~543px+)
 };
@@ -35,15 +36,19 @@ export default function ArticleMeta({
 }: Props) {
   return (
     <div
-      className={`flex items-center gap-2 ${textSize[size]} ${
-        light ? "text-white/85" : "text-ink-300 dark:text-white/40"
+      className={`flex min-w-0 items-center gap-2 ${textSize[size]} ${
+        light ? "text-white/85" : "text-ink-400 dark:text-white/40"
       } ${className}`}
     >
-      <span className={light ? "font-medium text-white" : "font-medium text-ink-500 dark:text-white/80"}>
+      {/* La categoría se recorta: en columnas angostas (miniatura de 120px en
+          pantallas de 320px) nombres como INTERNACIONAL desbordaban la fila. */}
+      <span
+        className={`truncate ${light ? "font-medium text-white" : "font-medium text-ink-500 dark:text-white/80"}`}
+      >
         {cleanCategoryName(category)}
       </span>
       <span className="opacity-50">|</span>
-      <span>{timeAgo(date)}</span>
+      <span className="shrink-0 whitespace-nowrap">{timeAgo(date)}</span>
       {actions && (
         <span className="ml-auto flex items-center gap-3">
           <button
@@ -54,7 +59,7 @@ export default function ArticleMeta({
             }}
             className="transition hover:opacity-70"
           >
-            <HeartIcon width={18} height={18} />
+            <ThumbUpIcon width={18} height={18} />
           </button>
           <ShareButton
             title={shareTitle}

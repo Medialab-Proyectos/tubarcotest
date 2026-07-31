@@ -37,6 +37,8 @@ interface Props {
   shape?: Shape;
   size?: Size;
   className?: string;
+  /** Punto latiendo: señala que la información es de ahora mismo. */
+  live?: boolean;
 }
 
 export default function Badge({
@@ -46,6 +48,7 @@ export default function Badge({
   shape = "ribbon",
   size = "md",
   className = "",
+  live = false,
 }: Props) {
   const shapeClass = shape === "ribbon" ? ribbonShape[size] : pillShape;
   const { width, height } = iconSize[shape][size];
@@ -57,6 +60,12 @@ export default function Badge({
       {icon === "flame" && <FlameIcon width={16} height={16} />}
       {icon === "boat" && <BoatIcon width={width} height={height} />}
       {children}
+      {live && (
+        <span className="relative ml-0.5 flex h-1.5 w-1.5" aria-hidden>
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+        </span>
+      )}
     </span>
   );
 }

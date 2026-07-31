@@ -8,22 +8,35 @@ interface Props {
   article: Article;
   thumbWidth?: number;
   className?: string;
+  /** Líneas de título antes de recortar (el Figma muestra 3 en Populares). */
+  lines?: 2 | 3;
+  /** Tarjeta blanca con la imagen a ras del borde (Figma 79:2922). Sin esto el
+   *  ítem es transparente, para usarlo dentro de un panel que ya es blanco. */
+  card?: boolean;
 }
 
 /** Ítem "Noticias": miniatura a la izquierda + título + meta. */
 export default function NewsListItem({
   article,
-  thumbWidth = 120,
+  thumbWidth = 132,
   className = "",
+  lines = 3,
+  card = false,
 }: Props) {
   return (
     <Link
       href={`/articulo/${article.slug}`}
-      className={`group flex gap-4 ${className}`}
+      className={`group flex ${
+        card
+          ? "gap-4 overflow-hidden rounded-card bg-white pr-4 dark:bg-ink-800"
+          : "gap-4"
+      } ${className}`}
     >
       <div
-        className="relative shrink-0 overflow-hidden rounded-xl bg-ink-50 dark:bg-ink-800"
-        style={{ width: thumbWidth, aspectRatio: "16 / 13" }}
+        className={`relative shrink-0 self-start overflow-hidden bg-ink-50 dark:bg-ink-900 ${
+          card ? "rounded-card" : "rounded-xl"
+        }`}
+        style={{ width: thumbWidth, aspectRatio: "120 / 103.5" }}
       >
         {article.image ? (
           <Image
@@ -36,17 +49,22 @@ export default function NewsListItem({
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-brand-100 to-brand-50" />
         )}
+        {/* Play de contorno abajo a la izquierda, como el Figma. */}
         {article.isVideo && (
-          <span className="absolute bottom-1.5 left-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-brand-500">
-            <PlayIcon width={12} height={12} />
+          <span className="absolute bottom-2 left-2 flex h-6 w-6 items-center justify-center rounded-md bg-ink-900/55 text-white backdrop-blur-sm">
+            <PlayIcon width={11} height={11} />
           </span>
         )}
       </div>
 
-      <div className="flex min-w-0 flex-col justify-center">
-        <h4 className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500 dark:text-white/90">
+      <div className="flex min-w-0 flex-col justify-center py-1">
+        <h3
+          className={`text-[15px] font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500 dark:text-white/90 ${
+            lines === 3 ? "line-clamp-3" : "line-clamp-2"
+          }`}
+        >
           {article.title}
-        </h4>
+        </h3>
         <ArticleMeta
           category={article.category}
           date={article.date}
