@@ -3,6 +3,7 @@
 import { cleanCategoryName, timeAgo } from "@/lib/utils";
 import { ThumbUpIcon } from "@/components/icons";
 import ShareButton from "./ShareButton";
+import { useReaccion } from "./ReaccionesProvider";
 
 type Size = "xs" | "sm" | "md";
 
@@ -22,6 +23,13 @@ interface Props {
   /** Ruta relativa del artículo (p. ej. /articulo/slug), para el botón de compartir. */
   shareUrl?: string;
   shareTitle?: string;
+  /** En columnas angostas (listas en móvil) la categoría y la hora no caben en
+   *  una línea: "hace 11h" se recortaba hasta quedar en "h". Con esto la hora
+   *  baja a su propia línea, más pequeña y en segundo plano. */
+  apilarEnMovil?: boolean;
+  /** Id y slug de la nota en WordPress, para que el pulgar pueda votar. */
+  wpPostId?: number;
+  slug?: string;
 }
 
 export default function ArticleMeta({
@@ -33,10 +41,19 @@ export default function ArticleMeta({
   size = "sm",
   shareUrl,
   shareTitle = "",
+  apilarEnMovil = false,
+  wpPostId,
+  slug,
 }: Props) {
+  const { reaccion, votar, disponible } = useReaccion(wpPostId, slug);
+
   return (
     <div
-      className={`flex min-w-0 items-center gap-2 ${textSize[size]} ${
+      className={`flex min-w-0 gap-2 ${
+        apilarEnMovil
+          ? "flex-col items-start gap-y-0.5 sm:flex-row sm:items-center"
+          : "items-center"
+      } ${textSize[size]} ${
         light ? "text-white/85" : "text-ink-400 dark:text-white/40"
       } ${className}`}
     >
@@ -47,19 +64,54 @@ export default function ArticleMeta({
       >
         {cleanCategoryName(category)}
       </span>
-      <span className="shrink-0 opacity-50">|</span>
-      <span className="truncate">{timeAgo(date)}</span>
+      <span className={`shrink-0 opacity-50 ${apilarEnMovil ? "hidden sm:inline" : ""}`}>
+        |
+      </span>
+      <span
+        className={`whitespace-nowrap ${
+          apilarEnMovil ? "text-xs opacity-80 sm:text-[length:inherit] sm:opacity-100" : "truncate"
+        }`}
+      >
+        {timeAgo(date)}
+      </span>
       {actions && (
         <span className="ml-auto flex items-center gap-3">
+          {/* Antes este pulgar solo cancelaba el clic del enlace y no hacía
+              nada más. Ahora vota de verdad, contra los mismos contadores que
+              la barra de la nota, y enseña la cifra en cuanto la sabe. */}
           <button
-            aria-label="Me gusta"
+            aria-label={
+              reaccion
+                ? `Me gusta · ${reaccion.likes} ${reaccion.likes === 1 ? "persona" : "personas"}`
+                : "Me gusta"
+            }
+            aria-pressed={reaccion ? reaccion.miVoto === "up" : undefined}
+            disabled={!disponible}
             onClick={(e) => {
+              // El botón vive dentro del enlace de la tarjeta: sin esto, votar
+              // abriría la noticia.
               e.preventDefault();
               e.stopPropagation();
+              votar("up");
             }}
-            className="transition hover:opacity-70"
+            className={`flex items-center gap-1 transition hover:opacity-70 active:scale-90 ${
+              reaccion?.miVoto === "up"
+                ? light
+                  ? "text-white"
+                  : "text-brand-500 dark:text-brand-100"
+                : ""
+            }`}
           >
-            <ThumbUpIcon width={18} height={18} />
+            <ThumbUpIcon
+              width={18}
+              height={18}
+              fill={reaccion?.miVoto === "up" ? "currentColor" : "none"}
+            />
+            {reaccion && reaccion.likes > 0 && (
+              <span className="text-xs font-semibold tabular-nums">
+                {reaccion.likes.toLocaleString("es-CO")}
+              </span>
+            )}
           </button>
           <ShareButton
             title={shareTitle}

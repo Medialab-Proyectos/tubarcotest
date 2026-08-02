@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { timeAgo } from "@/lib/utils";
+import Foto from "@/components/news/Foto";
 import SectionTitle from "@/components/news/SectionTitle";
 import { BookmarkIcon } from "@/components/icons";
 
@@ -91,15 +91,12 @@ export default async function MiTuBarcoPage() {
                 className="group flex gap-4 rounded-card bg-white p-3 transition hover:shadow-card dark:bg-ink-800"
               >
                 <div className="relative h-[92px] w-[132px] shrink-0 overflow-hidden rounded-xl bg-ink-50 dark:bg-ink-900">
-                  {g.image_url && (
-                    <Image
-                      src={g.image_url}
-                      alt=""
-                      fill
-                      sizes="132px"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  )}
+                  <Foto
+                    src={g.image_url}
+                    alt=""
+                    sizes="132px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 </div>
                 <div className="flex min-w-0 flex-col justify-center">
                   <h3 className="line-clamp-3 text-sm font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500 dark:text-white/90 sm:text-[calc(15px*var(--font-scale,1)*var(--font-user-scale,1))]">

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { CATEGORIES, getPosts, getVideoNews } from "@/lib/wp";
 import type { Article } from "@/lib/types";
 import HeroCarousel from "@/components/news/HeroCarousel";
@@ -8,6 +7,7 @@ import NewsListItem from "@/components/news/NewsListItem";
 import SectionTitle from "@/components/news/SectionTitle";
 import CardCarousel from "@/components/news/CardCarousel";
 import AdSlot from "@/components/news/AdSlot";
+import LoadMoreNews from "@/components/news/LoadMoreNews";
 import Newsletter from "@/components/layout/Newsletter";
 import { FlameIcon } from "@/components/icons";
 
@@ -106,8 +106,15 @@ export default async function HomePage() {
                 <NewsCard article={editorBig} size="md" priority />
               </div>
               <div className="flex flex-col gap-4">
-                {editorList.map((a) => (
-                  <NewsListItem key={a.id} article={a} thumbWidth={180} lines={2} card />
+                {editorList.map((a, i) => (
+                  <NewsListItem
+                    key={a.id}
+                    article={a}
+                    thumbWidth={180}
+                    lines={2}
+                    card
+                    invertir={i % 2 === 1}
+                  />
                 ))}
               </div>
             </div>
@@ -224,15 +231,9 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* VER MÁS NOTICIAS */}
-      <div className="container-tb mt-6 flex justify-center py-6">
-        <Link
-          href="/noticias"
-          className="rounded-pill border border-brand-500 px-6 py-3 text-lg font-medium text-brand-500 transition hover:bg-brand-50"
-        >
-          Ver más noticias
-        </Link>
-      </div>
+      {/* VER MÁS NOTICIAS — añade tandas debajo; `cursor` dice cuántas notas del
+          feed ya se repartieron arriba para que no se repitan. */}
+      <LoadMoreNews archiveHref="/noticias" saltar={cursor} />
 
       {/* NEWSLETTER */}
       <Newsletter />

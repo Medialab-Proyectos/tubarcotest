@@ -14,6 +14,10 @@ interface Props {
 
 type Paso = "correo" | "codigo" | "listo";
 
+/** En modo demostración no se envía correo: se entra con el código 0000.
+ *  Sirve para enseñar el producto sin depender de una bandeja de entrada. */
+const demo = process.env.NEXT_PUBLIC_DEMO_AUTH === "1";
+
 /** Acceso por código de un solo uso (OTP) al correo.
  *  Los textos siguen la propuesta: se pide la cuenta cuando el lector ya quiso
  *  hacer algo (guardar, seguir), no como una puerta al entrar. */
@@ -51,6 +55,13 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
     setCargando(true);
     setError("");
 
+    if (demo) {
+      // Sin envío de correo: se pasa directo a pedir el código.
+      setPaso("codigo");
+      setCargando(false);
+      return;
+    }
+
     const supabase = createClient();
     if (!supabase) {
       setError("El acceso no está disponible por ahora.");
@@ -75,6 +86,24 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
     e.preventDefault();
     setCargando(true);
     setError("");
+
+    if (demo) {
+      const res = await fetch("/api/demo-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: correo.trim(), nombre: nombre.trim(), codigo: codigo.trim() }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error ?? "No pudimos completar el acceso.");
+        setCargando(false);
+        return;
+      }
+      setPaso("listo");
+      setCargando(false);
+      setTimeout(() => window.location.reload(), 700);
+      return;
+    }
 
     const supabase = createClient();
     if (!supabase) return;
@@ -163,7 +192,9 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
               {cargando ? "Enviando…" : "Continuar con correo"}
             </button>
             <p className="text-xs text-ink-400 dark:text-white/40">
-              Te enviamos un código de 6 dígitos. No necesitas contraseña.
+              {demo
+                ? "Modo demostración: el código es 0000."
+                : "Te enviamos un código de 6 dígitos. No necesitas contraseña."}
             </p>
           </form>
         )}
@@ -171,28 +202,31 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
         {paso === "codigo" && (
           <form onSubmit={verificar} className="mt-4 space-y-3">
             <p className="text-sm text-ink-500 dark:text-white/60">
-              Revisa tu correo. Enviamos un código a{" "}
-              <span className="font-medium text-ink-900 dark:text-white">
-                {correo}
-              </span>
-              .
+              {demo ? (
+                <>Escribe <span className="font-semibold text-ink-900 dark:text-white">0000</span> para entrar.</>
+              ) : (
+                <>
+                  Revisa tu correo. Enviamos un código a{" "}
+                  <span className="font-medium text-ink-900 dark:text-white">{correo}</span>.
+                </>
+              )}
             </p>
             <input
               autoFocus
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={6}
+              maxLength={demo ? 4 : 6}
               required
               value={codigo}
               onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ""))}
-              placeholder="000000"
+              placeholder={demo ? "0000" : "000000"}
               aria-label="Código de verificación"
               className={`${campo} text-center tracking-[0.5em]`}
             />
             {error && <p className="text-sm text-red-500">{error}</p>}
             <button
               type="submit"
-              disabled={cargando || codigo.length < 6}
+              disabled={cargando || codigo.length < (demo ? 4 : 6)}
               className="h-12 w-full rounded-pill bg-brand-500 text-base font-medium text-white transition hover:bg-brand-700 active:scale-[0.98] disabled:opacity-60"
             >
               {cargando ? "Verificando…" : "Entrar"}

@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Article } from "@/lib/types";
 import ArticleMeta from "./ArticleMeta";
 import Badge from "./Badge";
-import { PlayIcon } from "@/components/icons";
+import Foto from "./Foto";
+import { PlayIcon, YoutubeIcon } from "@/components/icons";
 
 type Size = "xs" | "sm" | "md" | "lg";
 
@@ -76,18 +76,13 @@ export default function NewsCard({
       href={`/articulo/${article.slug}`}
       className={`group relative block h-full w-full overflow-hidden rounded-card bg-ink-900 ${className}`}
     >
-      {article.image ? (
-        <Image
-          src={article.image}
-          alt={article.imageAlt}
-          fill
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          priority={priority}
-        />
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-700 to-brand-900" />
-      )}
+      <Foto
+        src={article.image}
+        alt={article.imageAlt}
+        sizes="(max-width: 768px) 100vw, 33vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
+        priority={priority}
+      />
 
       {/* Velo para legibilidad. En tarjetas bajas se disipa mucho antes: con la
           curva de las grandes, el oscurecido llegaba casi al borde superior y
@@ -102,10 +97,20 @@ export default function NewsCard({
         </div>
       )}
 
-      {/* Marca de plataforma: dice de dónde viene el video antes de entrar. */}
+      {/* Marca de plataforma: dice de dónde viene el video antes de entrar.
+          Va con el logo real —y con el rojo de YouTube— porque el nombre escrito
+          se leía como una etiqueta más de la nota, no como la plataforma. */}
       {article.isVideo && article.videoSource && size === "lg" && (
-        <span className="absolute left-6 top-6 flex items-center gap-2 rounded-lg bg-ink-900/80 px-3 py-2 text-sm font-medium text-white backdrop-blur">
-          <PlayIcon width={14} height={14} />
+        <span
+          className={`absolute left-6 top-6 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white backdrop-blur ${
+            article.videoSource === "YouTube" ? "bg-[#FF0000]" : "bg-[#1AB7EA]"
+          }`}
+        >
+          {article.videoSource === "YouTube" ? (
+            <YoutubeIcon width={20} height={20} aria-hidden="true" />
+          ) : (
+            <PlayIcon width={14} height={14} aria-hidden="true" />
+          )}
           {article.videoSource}
         </span>
       )}
@@ -114,9 +119,14 @@ export default function NewsCard({
           en la grande, un botón de 64px junto al título (Figma 83:4368). */}
       {article.isVideo && size !== "lg" && (
         /* Chip tenue detrás del play: en fotos claras el ícono blanco solo
-           desaparecía y no se distinguía un video de una nota normal. */
+           desaparecía y no se distinguía un video de una nota normal. Si el
+           video es de YouTube se usa su logo, que se reconoce de un vistazo. */
         <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900/55 text-white backdrop-blur-sm">
-          <PlayIcon width={13} height={13} />
+          {article.videoSource === "YouTube" ? (
+            <YoutubeIcon width={17} height={17} className="text-[#FF0000]" />
+          ) : (
+            <PlayIcon width={13} height={13} />
+          )}
         </span>
       )}
 
@@ -138,6 +148,8 @@ export default function NewsCard({
             light
             actions={showActions}
             size={metaSize[size]}
+            wpPostId={article.id}
+            slug={article.slug}
             shareUrl={`/articulo/${article.slug}`}
             shareTitle={article.title}
             className={size === "xs" ? "mt-1.5" : "mt-2.5"}

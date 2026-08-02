@@ -3,6 +3,7 @@ import { Oswald, Poppins } from "next/font/google";
 import "./globals.css";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Footer from "@/components/layout/Footer";
+import ReaccionesProvider from "@/components/news/ReaccionesProvider";
 import { SITE_LOGO, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const poppins = Poppins({
@@ -112,7 +113,11 @@ export default function RootLayout({
           Saltar al contenido
         </a>
         <SiteHeader />
-        <main id="contenido">{children}</main>
+        {/* Los contadores de "me gusta" de todas las tarjetas se resuelven en
+            una sola consulta desde aquí (ver ReaccionesProvider). */}
+        <ReaccionesProvider>
+          <main id="contenido">{children}</main>
+        </ReaccionesProvider>
         <Footer />
       </body>
     </html>

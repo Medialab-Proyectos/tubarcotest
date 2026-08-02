@@ -322,14 +322,24 @@ export async function getCategoryBySlug(
   return result.data[0];
 }
 
-/** Noticias paginadas de todas las categorías (con total de páginas para el paginador). */
+/** Noticias paginadas de todas las categorías (con total de páginas para el paginador).
+ *
+ *  `saltar` descarta las primeras N noticias antes de paginar. Lo usa la portada,
+ *  que ya pintó sus primeras notas: sin esto, "Ver más noticias" volvía a traer
+ *  las mismas que el lector acababa de ver. */
 export async function getPostsPaged(
   page = 1,
-  perPage = 12
+  perPage = 12,
+  saltar = 0
 ): Promise<{ articles: Article[]; totalPages: number }> {
+  // WordPress ignora `page` cuando se le pasa `offset`, así que el desplazamiento
+  // de la página se suma a mano.
+  const paginacion =
+    saltar > 0 ? { offset: saltar + (page - 1) * perPage } : { page };
+
   const result = await wpFetch<WPPost[]>("/posts", {
     per_page: perPage,
-    page,
+    ...paginacion,
     _embed: "wp:featuredmedia,wp:term,author",
     _fields: LIST_FIELDS,
   });

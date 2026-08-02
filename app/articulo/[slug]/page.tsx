@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -10,6 +10,7 @@ import {
   readingTime,
 } from "@/lib/utils";
 import { SITE_LOGO, SITE_NAME, SITE_URL } from "@/lib/site";
+import Foto from "@/components/news/Foto";
 import NewsListItem from "@/components/news/NewsListItem";
 import NewsCard from "@/components/news/NewsCard";
 import SectionTitle from "@/components/news/SectionTitle";
@@ -18,7 +19,7 @@ import AdSlot from "@/components/news/AdSlot";
 import ArticleActions from "@/components/news/ArticleActions";
 import ReadingProgress from "@/components/news/ReadingProgress";
 import ViewCounter from "@/components/news/ViewCounter";
-import LoEsencial from "@/components/news/LoEsencial";
+import LoEsencialServidor, { EsqueletoEsencial } from "@/components/news/LoEsencialServidor";
 import Newsletter from "@/components/layout/Newsletter";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
 
@@ -121,10 +122,9 @@ export default async function ArticlePage({ params }: Params) {
         {/* FOTO DE APERTURA a todo el ancho (Figma 298:7290) */}
         {article.image && (
           <div className="relative h-[220px] w-full overflow-hidden rounded-card bg-ink-50 dark:bg-ink-800 lg:h-[392px]">
-            <Image
+            <Foto
               src={article.image}
               alt={article.imageAlt}
-              fill
               sizes="(max-width: 1024px) 100vw, 1464px"
               className="object-cover"
               priority
@@ -204,18 +204,28 @@ export default async function ArticlePage({ params }: Params) {
         </header>
 
         {/* LO ESENCIAL — tres puntos, antes del cuerpo */}
-        <LoEsencial slug={slug} />
+        <Suspense fallback={<EsqueletoEsencial />}>
+          <LoEsencialServidor
+            wpPostId={article.id}
+            slug={slug}
+            title={article.title}
+            content={article.content}
+          />
+        </Suspense>
 
-        {/* ENTRADILLA — solo si aporta algo que el cuerpo no repita */}
+        {/* ENTRADILLA — solo si aporta algo que el cuerpo no repita.
+            Los márgenes de este tramo se recortaron: entre el resumen y el
+            primer párrafo se acumulaban cuatro separaciones seguidas y en móvil
+            quedaba media pantalla en blanco. */}
         {article.excerpt && !excerptRepeatsBody(article.excerpt, article.content) && (
-          <p className="mt-8 text-lg leading-relaxed text-ink-700 dark:text-white/70 lg:text-2xl">
+          <p className="mt-5 text-lg leading-relaxed text-ink-700 dark:text-white/70 lg:mt-8 lg:text-2xl">
             {article.excerpt}
           </p>
         )}
-        <hr className="mt-6 border-ink-50 dark:border-white/10 lg:mt-8" />
+        <hr className="mt-5 border-ink-50 dark:border-white/10 lg:mt-8" />
 
         {/* ACCIONES · CUERPO · LATERAL */}
-        <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[56px_1fr_348px] lg:gap-[68px]">
+        <div className="mt-5 grid gap-6 lg:mt-8 lg:grid-cols-[56px_1fr_348px] lg:gap-[68px]">
           <div className="lg:w-14">
             <ArticleActions
               articulo={{

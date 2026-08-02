@@ -10,6 +10,7 @@ import {
 import { createClient, supabaseConfigurado } from "@/lib/supabase/client";
 import AuthModal from "@/components/auth/AuthModal";
 import ShareButton from "./ShareButton";
+import { useReaccion } from "./ReaccionesProvider";
 
 /** Datos mínimos que se guardan junto a la noticia, para poder pintar la lista
  *  de "Mi TuBarco" sin volver a pedirle nada a WordPress. */
@@ -28,6 +29,14 @@ interface Props {
 
 type Vote = "up" | "down" | null;
 
+/** 1.234 en vez de 1234, y 12,3 mil a partir de diez mil. */
+function formatearCifra(n: number): string {
+  if (n < 10000) return n.toLocaleString("es-CO");
+  return `${(n / 1000).toLocaleString("es-CO", { maximumFractionDigits: 1 })} mil`;
+}
+
+const personas = (n: number) => (n === 1 ? "persona" : "personas");
+
 /** Acción que quedó a medias por no tener sesión; se retoma al volver. */
 const PENDIENTE_KEY = "tb:accion-pendiente";
 
@@ -41,9 +50,17 @@ const PENDIENTE_KEY = "tb:accion-pendiente";
 export default function ArticleActions({ articulo }: Props) {
   const { wpPostId, slug, title } = articulo;
   const [saved, setSaved] = useState(false);
-  const [vote, setVote] = useState<Vote>(null);
   const [sesion, setSesion] = useState<boolean | null>(null);
   const [pidiendoAcceso, setPidiendoAcceso] = useState(false);
+
+  /* Los contadores salen del mismo sitio que los de las tarjetas: si esta barra
+     llevara su propio estado, votar aquí y ver la misma nota en una tarjeta de
+     "Más noticias" mostraría dos cifras distintas en la misma pantalla.
+     No exige cuenta: identifica con la cookie anónima que pone el servidor. */
+  const { reaccion, votar } = useReaccion(wpPostId, slug);
+  const vote: Vote = reaccion?.miVoto ?? null;
+  const likes = reaccion?.likes ?? null;
+  const dislikes = reaccion?.dislikes ?? null;
 
   const guardar = useCallback(
     async (activar: boolean) => {
@@ -147,6 +164,12 @@ export default function ArticleActions({ articulo }: Props) {
      Por eso `state()` devuelve una sola clase de color según el estado. */
   const btn =
     "flex h-10 w-10 items-center justify-center rounded-lg transition hover:bg-brand-500/5 active:scale-90 dark:hover:bg-white/10";
+  /* Los pulgares llevan cifra al lado, así que no pueden ser cuadrados: se les
+     deja crecer a lo ancho (en escritorio la cifra baja bajo el ícono, que ahí
+     la barra es una columna de 56px). */
+  const conCifra =
+    "flex h-10 min-w-10 items-center justify-center gap-1 rounded-lg px-1.5 transition hover:bg-brand-500/5 active:scale-90 dark:hover:bg-white/10 lg:h-auto lg:flex-col lg:gap-0.5 lg:px-0 lg:py-1";
+  const cifra = "text-xs font-semibold tabular-nums";
   const state = (on: boolean) =>
     on
       ? "text-brand-500 dark:text-brand-100"
@@ -178,23 +201,37 @@ export default function ArticleActions({ articulo }: Props) {
 
       <span className={divider} aria-hidden />
 
+      {/* El número va junto al pulgar: sin él no se sabía si la nota tenía una
+          reacción o mil, y ver que otros ya reaccionaron invita a hacerlo. */}
       <button
         type="button"
-        onClick={() => setVote((v) => (v === "up" ? null : "up"))}
+        onClick={() => votar("up")}
         aria-pressed={vote === "up"}
-        aria-label="Me gusta"
-        className={`${btn} ${state(vote === "up")}`}
+        aria-label={
+          likes === null ? "Me gusta" : `Me gusta · ${likes} ${personas(likes)}`
+        }
+        className={`${conCifra} ${state(vote === "up")}`}
       >
         <ThumbUpIcon width={24} height={24} fill={vote === "up" ? "currentColor" : "none"} />
+        {likes !== null && likes > 0 && (
+          <span className={cifra}>{formatearCifra(likes)}</span>
+        )}
       </button>
       <button
         type="button"
-        onClick={() => setVote((v) => (v === "down" ? null : "down"))}
+        onClick={() => votar("down")}
         aria-pressed={vote === "down"}
-        aria-label="No me gusta"
-        className={`${btn} ${state(vote === "down")}`}
+        aria-label={
+          dislikes === null
+            ? "No me gusta"
+            : `No me gusta · ${dislikes} ${personas(dislikes)}`
+        }
+        className={`${conCifra} ${state(vote === "down")}`}
       >
         <ThumbDownIcon width={24} height={24} fill={vote === "down" ? "currentColor" : "none"} />
+        {dislikes !== null && dislikes > 0 && (
+          <span className={cifra}>{formatearCifra(dislikes)}</span>
+        )}
       </button>
       <a href="#comentarios" aria-label="Comentarios" className={`${btn} ${state(false)}`}>
         <ChatIcon width={24} height={24} />

@@ -30,6 +30,9 @@ interface Props {
   archiveHref: string;
   /** Tandas que se pueden cargar sin salir de la página. */
   maxLoads?: number;
+  /** Noticias ya pintadas arriba, para no volver a traerlas. La portada reparte
+   *  a mano las primeras del feed entre sus bloques, así que debe declararlas. */
+  saltar?: number;
 }
 
 /** "Ver más noticias": añade tandas debajo en vez de saltar a otra página.
@@ -39,6 +42,7 @@ export default function LoadMoreNews({
   section,
   archiveHref,
   maxLoads = 3,
+  saltar = 0,
 }: Props) {
   const [batches, setBatches] = useState<Batch[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,8 +56,12 @@ export default function LoadMoreNews({
     setLoading(true);
     setFailed(false);
     try {
-      const page = loads + 2; // la página 1 ya está pintada en el servidor
+      // Con `saltar`, lo ya pintado se descuenta por desplazamiento y las tandas
+      // empiezan en la página 1 de lo que queda; sin él, la página 1 ya está en
+      // pantalla y hay que pedir la siguiente.
+      const page = saltar > 0 ? loads + 1 : loads + 2;
       const params = new URLSearchParams({ page: String(page) });
+      if (saltar > 0) params.set("saltar", String(saltar));
       if (section) params.set("seccion", section);
 
       const res = await fetch(`/api/noticias?${params}`);

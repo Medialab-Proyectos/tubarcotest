@@ -1,27 +1,22 @@
-"use client";
-
-import { usePathname } from "next/navigation";
 import NavBar from "./NavBar";
 import MenuBar from "./MenuBar";
 import InfoBar from "./InfoBar";
 import TagsBar from "./TagsBar";
+import OcultarEnNota from "./OcultarEnNota";
 
+/** Cabecera del sitio. Es componente de SERVIDOR a propósito: `InfoBar` y
+ *  `TagsBar` piden el dólar y el clima con `await`, y eso solo puede ocurrir en
+ *  el servidor. La decisión de esconderlas en la nota la toma `OcultarEnNota`,
+ *  que sí es de cliente pero solo recibe a los hijos ya renderizados. */
 export default function SiteHeader() {
-  const pathname = usePathname();
-  // En la nota el diseño deja solo NavBar + Menu (Figma 298:8402, 156px de alto):
-  // dentro de la lectura, los tags y el dólar distraen y roban altura útil.
-  const isArticle = pathname.startsWith("/articulo/");
-
   return (
     <header className="relative z-50 shadow-sm lg:sticky lg:top-0">
       <NavBar />
       <MenuBar />
-      {!isArticle && (
-        <>
-          <InfoBar />
-          <TagsBar />
-        </>
-      )}
+      <OcultarEnNota>
+        <InfoBar />
+        <TagsBar />
+      </OcultarEnNota>
     </header>
   );
 }
