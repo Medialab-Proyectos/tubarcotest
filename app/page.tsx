@@ -75,10 +75,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FILA DE 4 NOTICIAS */}
+      {/* FILA DE 4 NOTICIAS
+          El Figma deja esta fila sin rótulo, pero en revisión se leía como un
+          bloque suelto del que no se sabía qué era; se le pone título como al
+          resto de secciones. */}
       {grid4.length > 0 && (
         <section className="container-tb mt-6">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionTitle title="Últimas noticias" href="/noticias" />
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {grid4.map((a) => (
               <div key={a.id} className="h-[294px]">
                 <NewsCard article={a} size="sm" />

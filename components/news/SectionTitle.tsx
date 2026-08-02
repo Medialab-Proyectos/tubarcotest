@@ -23,7 +23,7 @@ export default function SectionTitle({
       {/* En móvil el título envuelve: con whitespace-nowrap los títulos largos
           ("Seleccionado por nuestros editores") desbordaban la pantalla. */}
       <Heading
-        className={`font-heading text-2xl font-medium sm:whitespace-nowrap sm:text-[32px] ${
+        className={`font-heading text-2xl font-medium sm:whitespace-nowrap sm:text-[calc(32px*var(--font-scale,1)*var(--font-user-scale,1))] ${
           dark ? "text-white" : "text-ink-900 dark:text-white"
         }`}
       >

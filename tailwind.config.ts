@@ -50,6 +50,24 @@ const config: Config = {
         sans: ["var(--font-poppins)", "system-ui", "sans-serif"],
         heading: ["var(--font-oswald)", "system-ui", "sans-serif"],
       },
+      /* Escala tipográfica atada a --font-scale (globals.css), que en
+         escritorio vale 0.9. Se toca aquí y no en el tamaño raíz del html
+         porque los espaciados de Tailwind también van en rem: bajando la raíz
+         se encogerían márgenes y altos, y el calce con Figma se rompería.
+         Las alturas de línea son sin unidad para que sigan al tamaño. */
+      fontSize: {
+        xs: ["calc(0.75rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.35" }],
+        sm: ["calc(0.875rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.45" }],
+        base: ["calc(1rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.5" }],
+        lg: ["calc(1.125rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.55" }],
+        xl: ["calc(1.25rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.4" }],
+        "2xl": ["calc(1.5rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.33" }],
+        "3xl": ["calc(1.875rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.2" }],
+        "4xl": ["calc(2.25rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.11" }],
+        "5xl": ["calc(3rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1.05" }],
+        "6xl": ["calc(3.75rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1" }],
+        "7xl": ["calc(4.5rem * var(--font-scale, 1) * var(--font-user-scale, 1))", { lineHeight: "1" }],
+      },
       borderRadius: {
         card: "16px",
         pill: "999px",

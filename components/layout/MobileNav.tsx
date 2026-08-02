@@ -7,6 +7,8 @@ import { NAV_ITEMS } from "@/lib/wp";
 import Logo from "./Logo";
 import SearchBox from "./SearchBox";
 import ThemeToggle from "./ThemeToggle";
+import AuthModal from "@/components/auth/AuthModal";
+import FontSizeControl from "./FontSizeControl";
 
 const REGIONS = [
   { label: "Barranquilla", href: "/categoria/tubarco-noticias-barranquilla" },
@@ -41,6 +43,7 @@ function Hamburger({ open }: { open: boolean }) {
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [auth, setAuth] = useState(false);
   const pathname = usePathname();
 
   // Cierra el drawer al navegar
@@ -57,16 +60,22 @@ export default function MobileNav() {
   }, [open]);
 
   return (
-    <div className="flex items-center gap-4 lg:hidden">
+    /* Ambos botones comparten la misma caja de 40px: la hamburguesa mide 16px
+       de alto y la lupa 20px, así que sin caja común quedaban desalineados
+       3px en vertical. De paso el área táctil deja de ser el icono. */
+    <div className="flex items-center gap-1 lg:hidden">
       <button
         aria-label={open ? "Cerrar menú" : "Abrir menú"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="text-white"
+        className="flex h-10 w-10 items-center justify-center text-white"
       >
         <Hamburger open={open} />
       </button>
-      <SearchBox iconClassName="text-white" align="left" />
+      <SearchBox
+        iconClassName="flex h-10 w-10 items-center justify-center text-white"
+        align="left"
+      />
 
       {/* Overlay + drawer */}
       <div
@@ -113,7 +122,7 @@ export default function MobileNav() {
                     <Link
                       href={item.href}
                       aria-current={active ? "page" : undefined}
-                      className={`block rounded-lg px-3 py-2.5 text-[15px] transition ${
+                      className={`block rounded-lg px-3 py-2.5 text-[calc(15px*var(--font-scale,1)*var(--font-user-scale,1))] transition ${
                         active
                           ? "bg-brand-50 font-semibold text-brand-500 dark:bg-white/10"
                           : "font-medium text-ink-900 hover:bg-surface-muted dark:text-white/80 dark:hover:bg-white/5"
@@ -134,7 +143,7 @@ export default function MobileNav() {
                 <li key={r.href}>
                   <Link
                     href={r.href}
-                    className="block rounded-lg px-3 py-2.5 text-[15px] font-medium text-ink-700 transition hover:bg-surface-muted dark:text-white/70 dark:hover:bg-white/5"
+                    className="block rounded-lg px-3 py-2.5 text-[calc(15px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium text-ink-700 transition hover:bg-surface-muted dark:text-white/70 dark:hover:bg-white/5"
                   >
                     {r.label}
                   </Link>
@@ -143,13 +152,23 @@ export default function MobileNav() {
             </ul>
           </div>
 
-          <div className="border-t border-ink-50 p-4 dark:border-white/10">
-            <button className="w-full rounded-pill bg-brand-500 py-3 text-sm font-medium text-white">
+          <div className="space-y-3 border-t border-ink-50 p-4 dark:border-white/10">
+            <FontSizeControl withLabel />
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setAuth(true);
+              }}
+              className="w-full rounded-pill bg-brand-500 py-3 text-sm font-medium text-white transition active:scale-[0.98]"
+            >
               Iniciar sesión
             </button>
           </div>
         </nav>
       </div>
+
+      <AuthModal open={auth} onClose={() => setAuth(false)} />
     </div>
   );
 }

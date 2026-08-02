@@ -13,6 +13,21 @@
      En móvil el header no es sticky, así que vale 0. */
   --header-h: 0px;
   --header-h-article: 0px;
+
+  /* Escala de la tipografía. En móvil se queda a tamaño natural; en escritorio
+     baja un 10% (petición de revisión: el texto se veía grande en pantallas
+     anchas). Solo afecta a la letra, nunca a los espaciados. */
+  --font-scale: 1;
+
+  /* Preferencia del lector (botones A− / A+). Se multiplica con la anterior,
+     así el ajuste de accesibilidad respeta el tamaño base de cada pantalla. */
+  --font-user-scale: 1;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --font-scale: 0.9;
+  }
 }
 
 @media (min-width: 1024px) {

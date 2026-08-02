@@ -11,7 +11,7 @@ const styles: Record<Variant, string> = {
   dark: "bg-ink-900/85 text-white backdrop-blur",
 };
 
-const pillShape = "gap-1.5 rounded-pill px-3 py-1.5 text-[13px] font-semibold";
+const pillShape = "gap-1.5 rounded-pill px-3 py-1.5 text-[calc(13px*var(--font-scale,1)*var(--font-user-scale,1))] font-semibold";
 
 // Cinta pegada al borde izquierdo de la imagen (Noticia Principal / Hero), en dos escalas confirmadas en Figma.
 const ribbonShape: Record<Size, string> = {

@@ -40,15 +40,15 @@ export default function ArticleMeta({
         light ? "text-white/85" : "text-ink-400 dark:text-white/40"
       } ${className}`}
     >
-      {/* La categoría se recorta: en columnas angostas (miniatura de 120px en
-          pantallas de 320px) nombres como INTERNACIONAL desbordaban la fila. */}
+      {/* La categoría NO se recorta: "Internacio…" o "Col…" no dicen nada. Se
+          deja completa y es la hora la que cede espacio si hiciera falta. */}
       <span
-        className={`truncate ${light ? "font-medium text-white" : "font-medium text-ink-500 dark:text-white/80"}`}
+        className={`shrink-0 whitespace-nowrap ${light ? "font-medium text-white" : "font-medium text-ink-500 dark:text-white/80"}`}
       >
         {cleanCategoryName(category)}
       </span>
-      <span className="opacity-50">|</span>
-      <span className="shrink-0 whitespace-nowrap">{timeAgo(date)}</span>
+      <span className="shrink-0 opacity-50">|</span>
+      <span className="truncate">{timeAgo(date)}</span>
       {actions && (
         <span className="ml-auto flex items-center gap-3">
           <button

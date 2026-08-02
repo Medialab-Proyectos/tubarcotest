@@ -58,9 +58,14 @@ export default function NewsListItem({
       </div>
 
       <div className="flex min-w-0 flex-col justify-center py-1">
+        {/* En móvil la columna de texto es angosta: con 15px y 3 líneas los
+            titulares se cortaban a media frase y no se entendía la noticia.
+            Ahí se baja a 14px y se permite una línea más. */}
         <h3
-          className={`text-[15px] font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500 dark:text-white/90 ${
-            lines === 3 ? "line-clamp-3" : "line-clamp-2"
+          className={`text-sm font-semibold leading-snug text-ink-900 transition-colors group-hover:text-brand-500 dark:text-white/90 sm:text-[calc(15px*var(--font-scale,1)*var(--font-user-scale,1))] ${
+            lines === 3
+              ? "line-clamp-4 sm:line-clamp-3"
+              : "line-clamp-3 sm:line-clamp-2"
           }`}
         >
           {article.title}

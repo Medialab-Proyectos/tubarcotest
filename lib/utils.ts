@@ -54,9 +54,11 @@ export function timeAgo(dateString: string): string {
   const weeks = Math.floor(days / 7);
   if (weeks < 4) return `hace ${weeks} sem`;
 
+  // Formato corto ("12 mar 2026"): el largo ("12 de marzo de 2026") no cabía en
+  // la fila de datos de las tarjetas angostas y descuadraba la alineación.
   return date.toLocaleDateString("es-CO", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 }

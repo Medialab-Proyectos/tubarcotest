@@ -75,14 +75,14 @@ export default function HeroCarousel({ articles }: Props) {
           <button
             onClick={() => go(-1)}
             aria-label="Anterior"
-            className="absolute left-8 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/30 text-white backdrop-blur transition hover:bg-white/40"
+            className="absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-ink-900/40 text-white backdrop-blur transition hover:bg-ink-900/60 sm:left-8"
           >
             <ArrowLeftIcon />
           </button>
           <button
             onClick={() => go(1)}
             aria-label="Siguiente"
-            className="absolute right-8 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/30 text-white backdrop-blur transition hover:bg-white/40"
+            className="absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-ink-900/40 text-white backdrop-blur transition hover:bg-ink-900/60 sm:right-8"
           >
             <ArrowRightIcon />
           </button>
@@ -95,33 +95,37 @@ export default function HeroCarousel({ articles }: Props) {
             {article.title}
           </h2>
         </Link>
-        <ArticleMeta
-          category={article.category}
-          date={article.date}
-          light
-          actions
-          size="md"
-          shareUrl={`/articulo/${article.slug}`}
-          shareTitle={article.title}
-          className="mt-4"
-        />
-      </div>
-
-      {/* Indicadores */}
-      {count > 1 && (
-        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-2">
-          {articles.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              aria-label={`Ir a la noticia ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
-                i === index ? "w-6 bg-white" : "w-2 bg-white/50"
-              }`}
-            />
-          ))}
+        {/* Los indicadores van dentro de este bloque, no flotando sobre él:
+            estaban en `absolute bottom-6` y en móvil caían encima de la línea
+            "Cali · hace 12h". En escritorio se centran sobre la misma fila,
+            como en el diseño (Figma 142:2740). */}
+        <div className="relative mt-4">
+          <ArticleMeta
+            category={article.category}
+            date={article.date}
+            light
+            actions
+            size="md"
+            shareUrl={`/articulo/${article.slug}`}
+            shareTitle={article.title}
+          />
+          {count > 1 && (
+            <div className="mt-3 flex justify-center gap-2 sm:absolute sm:inset-y-0 sm:left-1/2 sm:mt-0 sm:-translate-x-1/2 sm:items-center">
+              {articles.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  aria-label={`Ir a la noticia ${i + 1}`}
+                  aria-current={i === index ? "true" : undefined}
+                  className={`h-2 rounded-full transition-all ${
+                    i === index ? "w-6 bg-white" : "w-2 bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

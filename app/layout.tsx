@@ -61,6 +61,19 @@ try {
   var stored = localStorage.getItem('theme');
   var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   if (dark) document.documentElement.classList.add('dark');
+
+  // Tamaño de letra elegido con A− / A+: se aplica antes de pintar para que
+  // el texto no aparezca primero en un tamaño y salte al otro.
+  var pasos = [0.85, 1, 1.15, 1.3];
+  var guardado = localStorage.getItem('tb:tamano-letra');
+  // Comprobar null aparte: Number(null) es 0, que es un índice válido, y sin
+  // preferencia guardada el sitio arrancaba en el tamaño más pequeño.
+  if (guardado !== null) {
+    var paso = Number(guardado);
+    if (Number.isInteger(paso) && pasos[paso]) {
+      document.documentElement.style.setProperty('--font-user-scale', String(pasos[paso]));
+    }
+  }
 } catch (e) {}
 `;
 

@@ -1,62 +1,144 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   BookmarkIcon,
   ChatIcon,
   ThumbDownIcon,
   ThumbUpIcon,
 } from "@/components/icons";
+import { createClient, supabaseConfigurado } from "@/lib/supabase/client";
+import AuthModal from "@/components/auth/AuthModal";
 import ShareButton from "./ShareButton";
 
-interface Props {
+/** Datos mínimos que se guardan junto a la noticia, para poder pintar la lista
+ *  de "Mi TuBarco" sin volver a pedirle nada a WordPress. */
+export interface ArticuloGuardable {
+  wpPostId: number;
   slug: string;
   title: string;
+  imageUrl?: string | null;
+  category?: string | null;
+  publishedAt?: string | null;
+}
+
+interface Props {
+  articulo: ArticuloGuardable;
 }
 
 type Vote = "up" | "down" | null;
 
-const SAVED_KEY = "tb:guardadas";
+/** Acción que quedó a medias por no tener sesión; se retoma al volver. */
+const PENDIENTE_KEY = "tb:accion-pendiente";
 
 /** Barra de acciones de la nota — Figma 345:3955.
  *  En escritorio es una columna fija a la izquierda del texto; en móvil se
- *  convierte en una barra horizontal sobre el cuerpo, para no robar ancho de
- *  lectura en pantallas estrechas.
+ *  convierte en una barra flotante, para no robar ancho de lectura.
  *
- *  Guardar y votar se resuelven en el navegador (localStorage): el sitio aún no
- *  tiene cuentas de usuario, y un botón que no responde es peor que no tenerlo. */
-export default function ArticleActions({ slug, title }: Props) {
+ *  Guardar exige cuenta (así lo define la propuesta): si no hay sesión se abre
+ *  el acceso y, al volver, la noticia se guarda sola — el lector no tiene que
+ *  acordarse de repetir el clic. */
+export default function ArticleActions({ articulo }: Props) {
+  const { wpPostId, slug, title } = articulo;
   const [saved, setSaved] = useState(false);
   const [vote, setVote] = useState<Vote>(null);
+  const [sesion, setSesion] = useState<boolean | null>(null);
+  const [pidiendoAcceso, setPidiendoAcceso] = useState(false);
 
+  const guardar = useCallback(
+    async (activar: boolean) => {
+      const supabase = createClient();
+      if (!supabase) return;
+
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id;
+      if (!uid) return;
+
+      if (activar) {
+        await supabase.from("saved_articles").upsert(
+          {
+            user_id: uid,
+            wp_post_id: wpPostId,
+            slug,
+            title,
+            image_url: articulo.imageUrl ?? null,
+            category: articulo.category ?? null,
+            published_at: articulo.publishedAt ?? null,
+          },
+          { onConflict: "user_id,wp_post_id" }
+        );
+      } else {
+        await supabase
+          .from("saved_articles")
+          .delete()
+          .eq("user_id", uid)
+          .eq("wp_post_id", wpPostId);
+      }
+      setSaved(activar);
+    },
+    [wpPostId, slug, title, articulo.imageUrl, articulo.category, articulo.publishedAt]
+  );
+
+  // Estado inicial: ¿hay sesión? ¿esta nota ya está guardada?
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(SAVED_KEY);
-      const list: unknown = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(list)) setSaved(list.includes(slug));
-    } catch {
-      /* localStorage puede estar bloqueado; guardar es opcional */
+    const supabase = createClient();
+    if (!supabase) {
+      setSesion(false);
+      return;
     }
-  }, [slug]);
+
+    let vivo = true;
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!vivo) return;
+      const uid = data.user?.id;
+      setSesion(Boolean(uid));
+      if (!uid) return;
+
+      const { data: fila } = await supabase
+        .from("saved_articles")
+        .select("wp_post_id")
+        .eq("user_id", uid)
+        .eq("wp_post_id", wpPostId)
+        .maybeSingle();
+      if (vivo) setSaved(Boolean(fila));
+
+      // Si venía de iniciar sesión para guardar ESTA nota, se completa sola.
+      try {
+        const raw = window.sessionStorage.getItem(PENDIENTE_KEY);
+        if (raw) {
+          const pendiente = JSON.parse(raw) as { tipo?: string; wpPostId?: number };
+          if (pendiente?.tipo === "guardar" && pendiente.wpPostId === wpPostId) {
+            window.sessionStorage.removeItem(PENDIENTE_KEY);
+            await guardar(true);
+          }
+        }
+      } catch {
+        /* sessionStorage bloqueado: solo se pierde el automatismo */
+      }
+    });
+
+    return () => {
+      vivo = false;
+    };
+  }, [wpPostId, guardar]);
 
   function toggleSaved() {
-    setSaved((prev) => {
-      const next = !prev;
+    if (!supabaseConfigurado) return;
+
+    if (!sesion) {
+      // Se recuerda la intención para retomarla después del acceso.
       try {
-        const raw = window.localStorage.getItem(SAVED_KEY);
-        const parsed: unknown = raw ? JSON.parse(raw) : [];
-        const list = Array.isArray(parsed)
-          ? parsed.filter((v): v is string => typeof v === "string")
-          : [];
-        const updated = next
-          ? [slug, ...list.filter((s) => s !== slug)]
-          : list.filter((s) => s !== slug);
-        window.localStorage.setItem(SAVED_KEY, JSON.stringify(updated));
+        window.sessionStorage.setItem(
+          PENDIENTE_KEY,
+          JSON.stringify({ tipo: "guardar", wpPostId })
+        );
       } catch {
-        /* sin persistencia: el estado dura lo que la vista */
+        /* sin sessionStorage el lector tendrá que volver a pulsar */
       }
-      return next;
-    });
+      setPidiendoAcceso(true);
+      return;
+    }
+    void guardar(!saved);
   }
 
   /* El color NO va en la base: si la clase de reposo y la de activo son ambas
@@ -126,6 +208,12 @@ export default function ArticleActions({ slug, title }: Props) {
         className={`${btn} ${state(false)}`}
         iconWidth={24}
         iconHeight={24}
+      />
+
+      <AuthModal
+        open={pidiendoAcceso}
+        onClose={() => setPidiendoAcceso(false)}
+        motivo="Guarda esta noticia y vuelve cuando quieras. Te la dejamos en Mi TuBarco."
       />
     </div>
   );

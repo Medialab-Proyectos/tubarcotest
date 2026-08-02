@@ -17,6 +17,8 @@ import Panel from "@/components/news/Panel";
 import AdSlot from "@/components/news/AdSlot";
 import ArticleActions from "@/components/news/ArticleActions";
 import ReadingProgress from "@/components/news/ReadingProgress";
+import ViewCounter from "@/components/news/ViewCounter";
+import LoEsencial from "@/components/news/LoEsencial";
 import Newsletter from "@/components/layout/Newsletter";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
 
@@ -154,8 +156,13 @@ export default async function ArticlePage({ params }: Params) {
             ) : (
               <span className="shrink-0">{category}</span>
             )}
-            <span aria-hidden>/</span>
-            <span className="truncate text-ink-400 dark:text-white/50">
+            {/* El titular solo se repite en la miga en escritorio: en móvil
+                partía la fila en dos líneas y además ya está justo debajo,
+                como h1, así que no aportaba nada. */}
+            <span aria-hidden className="hidden lg:inline">
+              /
+            </span>
+            <span className="hidden truncate text-ink-400 dark:text-white/50 lg:inline">
               {article.title}
             </span>
           </div>
@@ -163,32 +170,41 @@ export default async function ArticlePage({ params }: Params) {
 
         {/* TITULAR + DATOS */}
         <header className="mt-8">
-          <h1 className="font-heading text-[28px] font-medium leading-tight text-ink-900 dark:text-white lg:text-[36px]">
+          <h1 className="font-heading text-[calc(28px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium leading-tight text-ink-900 dark:text-white lg:text-[calc(36px*var(--font-scale,1)*var(--font-user-scale,1))]">
             {article.title}
           </h1>
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-base text-ink-400 dark:text-white/50 lg:text-xl">
-            <span className="flex-1 whitespace-nowrap">
+          {/* En móvil esto se apila: fecha · tiempo de lectura, y la categoría
+              debajo. El "|" se oculta ahí porque quedaba huérfano al final de
+              la primera línea, con la categoría sola en la siguiente. */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-400 dark:text-white/50 lg:text-xl">
+            <span className="whitespace-nowrap lg:flex-1">
               {formatArticleDate(article.date)}
             </span>
-            <span className="flex items-center gap-3 whitespace-nowrap">
-              <ClockIcon width={20} height={20} />
+            <span className="flex items-center gap-2 whitespace-nowrap lg:gap-3">
+              <ClockIcon width={18} height={18} className="lg:h-5 lg:w-5" />
               {minutes} minutos de lectura
             </span>
-            <span aria-hidden>|</span>
+            <ViewCounter wpPostId={article.id} slug={slug} />
+            <span aria-hidden className="hidden lg:inline">
+              |
+            </span>
             {article.categorySlug ? (
               <Link
                 href={`/categoria/${article.categorySlug}`}
-                className="font-semibold text-brand-500 transition hover:underline dark:text-brand-100"
+                className="w-full font-semibold text-brand-500 transition hover:underline dark:text-brand-100 lg:w-auto"
               >
                 {category}
               </Link>
             ) : (
-              <span className="font-semibold text-brand-500 dark:text-brand-100">
+              <span className="w-full font-semibold text-brand-500 dark:text-brand-100 lg:w-auto">
                 {category}
               </span>
             )}
           </div>
         </header>
+
+        {/* LO ESENCIAL — tres puntos, antes del cuerpo */}
+        <LoEsencial slug={slug} />
 
         {/* ENTRADILLA — solo si aporta algo que el cuerpo no repita */}
         {article.excerpt && !excerptRepeatsBody(article.excerpt, article.content) && (
@@ -196,12 +212,21 @@ export default async function ArticlePage({ params }: Params) {
             {article.excerpt}
           </p>
         )}
-        <hr className="mt-8 border-ink-50 dark:border-white/10" />
+        <hr className="mt-6 border-ink-50 dark:border-white/10 lg:mt-8" />
 
         {/* ACCIONES · CUERPO · LATERAL */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-[56px_1fr_348px] lg:gap-[68px]">
+        <div className="mt-6 grid gap-6 lg:mt-8 lg:grid-cols-[56px_1fr_348px] lg:gap-[68px]">
           <div className="lg:w-14">
-            <ArticleActions slug={slug} title={article.title} />
+            <ArticleActions
+              articulo={{
+                wpPostId: article.id,
+                slug,
+                title: article.title,
+                imageUrl: article.image,
+                category,
+                publishedAt: article.date,
+              }}
+            />
           </div>
 
           {/* pb en móvil: deja sitio a la barra flotante de acciones */}

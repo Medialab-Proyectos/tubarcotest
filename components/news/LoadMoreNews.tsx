@@ -105,6 +105,22 @@ export default function LoadMoreNews({
         );
       })}
 
+      {/* Esqueleto de la tanda en curso: antes solo cambiaba el texto del botón
+          y, con la conexión lenta, no pasaba nada visible durante segundos. */}
+      {loading && (
+        <section className="container-tb mt-6" aria-busy role="status">
+          <span className="sr-only">Cargando más noticias…</span>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-[260px] animate-pulse rounded-card bg-ink-100 dark:bg-white/10 lg:h-[320px]"
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="container-tb mt-6 flex flex-col items-center gap-3 py-6">
         {failed && (
           <p className="text-sm text-ink-400 dark:text-white/50" role="status">

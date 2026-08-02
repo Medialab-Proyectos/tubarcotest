@@ -31,6 +31,14 @@ const titleSize: Record<Size, string> = {
   lg: "text-2xl leading-tight line-clamp-2",
 };
 
+// Cuánto sube el oscurecido sobre la foto, según el alto de la tarjeta.
+const overlay: Record<Size, string> = {
+  xs: "from-ink-900 from-0% via-ink-900/45 via-30% to-transparent to-55%",
+  sm: "from-ink-900 from-2% via-ink-900/55 via-35% to-transparent to-70%",
+  md: "from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%",
+  lg: "from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%",
+};
+
 const textPadding: Record<Size, string> = {
   xs: "p-3",
   sm: "p-4 sm:p-5",
@@ -81,8 +89,10 @@ export default function NewsCard({
         <div className="absolute inset-0 bg-gradient-to-br from-brand-700 to-brand-900" />
       )}
 
-      {/* Gradiente para legibilidad — opaco en la base, se disipa cerca del borde superior */}
-      <div className="absolute inset-0 bg-gradient-to-t from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%" />
+      {/* Velo para legibilidad. En tarjetas bajas se disipa mucho antes: con la
+          curva de las grandes, el oscurecido llegaba casi al borde superior y
+          la foto quedaba escondida detrás del texto. */}
+      <div className={`absolute inset-0 bg-gradient-to-t ${overlay[size]}`} />
 
       {badge && (
         <div className="absolute left-0 top-6">

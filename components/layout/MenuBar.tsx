@@ -6,6 +6,7 @@ import { NAV_ITEMS } from "@/lib/wp";
 import { WandIcon } from "@/components/icons";
 import SearchBox from "./SearchBox";
 import ThemeToggle from "./ThemeToggle";
+import FontSizeControl from "./FontSizeControl";
 
 /** Barra de secciones — Figma 18:3563.
  *  Altura 68px = pt-16 + ítem de 48px + pb-4. El subrayado del ítem activo es el
@@ -28,7 +29,7 @@ export default function MenuBar() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-12 shrink-0 items-center justify-center whitespace-nowrap px-4 text-[18px] font-semibold leading-6 transition-colors ${
+                className={`flex h-12 shrink-0 items-center justify-center whitespace-nowrap px-4 text-[calc(18px*var(--font-scale,1)*var(--font-user-scale,1))] font-semibold leading-6 transition-colors ${
                   active
                     ? "border-b-2 border-brand-500 text-brand-500 dark:border-brand-100 dark:text-brand-100"
                     : "rounded-lg text-ink-900 hover:text-brand-500 dark:text-white/80 dark:hover:text-brand-100"
@@ -40,7 +41,8 @@ export default function MenuBar() {
           })}
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center text-ink-900 dark:text-white/80">
+        <div className="ml-auto flex shrink-0 items-center gap-1 text-ink-900 dark:text-white/80">
+          <FontSizeControl className="mr-1" />
           <SearchBox
             iconSize={22}
             iconClassName="flex h-[46px] items-center justify-center rounded-pill px-4 transition hover:text-brand-500"

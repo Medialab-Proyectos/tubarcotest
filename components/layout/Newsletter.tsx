@@ -11,9 +11,12 @@ export default function Newsletter() {
             alt=""
             fill
             aria-hidden
-            className="pointer-events-none object-cover"
+            /* Los barquitos están en los extremos de una imagen muy apaisada:
+               centrada, en móvil el recorte se quedaba con la zona vacía del
+               medio y el fondo parecía un rectángulo gris. */
+            className="pointer-events-none object-cover object-left sm:object-center"
           />
-          <h2 className="relative mx-auto max-w-2xl font-heading text-[32px] leading-[1.1] sm:text-[44px] lg:text-[60px]">
+          <h2 className="relative mx-auto max-w-2xl font-heading text-[calc(32px*var(--font-scale,1)*var(--font-user-scale,1))] leading-[1.1] sm:text-[calc(44px*var(--font-scale,1)*var(--font-user-scale,1))] lg:text-[calc(60px*var(--font-scale,1)*var(--font-user-scale,1))]">
             <span className="text-ink-900">Regístrate para conocer las</span>{" "}
             <span className="text-brand-500">últimas noticias</span>
           </h2>

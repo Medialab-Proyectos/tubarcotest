@@ -20,6 +20,7 @@ import {
   MessageCircle,
   Bookmark,
   Clock,
+  Eye,
   Link2,
   Check,
   X as Close,
@@ -62,6 +63,10 @@ export function BookmarkIcon(props: IconProps) {
 
 export function ClockIcon(props: IconProps) {
   return <Clock width={20} height={20} strokeWidth={1.8} {...props} />;
+}
+
+export function EyeIcon(props: IconProps) {
+  return <Eye width={20} height={20} strokeWidth={1.8} {...props} />;
 }
 
 export function LinkIcon(props: IconProps) {

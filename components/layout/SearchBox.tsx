@@ -219,10 +219,10 @@ export default function SearchBox({
                           onClick={close}
                           className="block rounded-lg px-2 py-2 transition hover:bg-surface-muted dark:hover:bg-white/5"
                         >
-                          <span className="line-clamp-2 text-[14px] font-medium leading-5 text-ink-900 dark:text-white/90">
+                          <span className="line-clamp-2 text-[calc(14px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium leading-5 text-ink-900 dark:text-white/90">
                             {s.title}
                           </span>
-                          <span className="mt-0.5 block text-[11px] font-medium uppercase tracking-wide text-brand-500 dark:text-brand-100">
+                          <span className="mt-0.5 block text-[calc(11px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium uppercase tracking-wide text-brand-500 dark:text-brand-100">
                             {s.category}
                           </span>
                         </Link>
@@ -230,7 +230,7 @@ export default function SearchBox({
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-2 py-3 text-[13px] text-ink-400 dark:text-white/50">
+                  <p className="px-2 py-3 text-[calc(13px*var(--font-scale,1)*var(--font-user-scale,1))] text-ink-400 dark:text-white/50">
                     Sin coincidencias. Pulsa Enter para buscar en todo el archivo.
                   </p>
                 )}
@@ -242,7 +242,7 @@ export default function SearchBox({
               <div className="mt-3 space-y-3">
                 {recent.length > 0 && (
                   <div>
-                    <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-400 dark:text-white/40">
+                    <p className="px-2 pb-1 text-[calc(11px*var(--font-scale,1)*var(--font-user-scale,1))] font-semibold uppercase tracking-wide text-ink-400 dark:text-white/40">
                       Recientes
                     </p>
                     <ul>
@@ -251,7 +251,7 @@ export default function SearchBox({
                           <button
                             type="button"
                             onClick={() => commit(term)}
-                            className="flex-1 truncate rounded-lg px-2 py-2 text-left text-[14px] text-ink-700 transition hover:bg-surface-muted dark:text-white/80 dark:hover:bg-white/5"
+                            className="flex-1 truncate rounded-lg px-2 py-2 text-left text-[calc(14px*var(--font-scale,1)*var(--font-user-scale,1))] text-ink-700 transition hover:bg-surface-muted dark:text-white/80 dark:hover:bg-white/5"
                           >
                             {term}
                           </button>
@@ -270,7 +270,7 @@ export default function SearchBox({
                 )}
 
                 <div>
-                  <p className="flex items-center gap-1.5 px-2 pb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-400 dark:text-white/40">
+                  <p className="flex items-center gap-1.5 px-2 pb-2 text-[calc(11px*var(--font-scale,1)*var(--font-user-scale,1))] font-semibold uppercase tracking-wide text-ink-400 dark:text-white/40">
                     <TrendUpIcon className="text-correct" width={14} height={14} />
                     Tendencias
                   </p>
@@ -280,7 +280,7 @@ export default function SearchBox({
                         key={tag.href}
                         href={tag.href}
                         onClick={close}
-                        className="rounded-pill bg-brand-500/5 px-3 py-1.5 text-[13px] font-medium text-brand-900 transition hover:bg-brand-500/10 active:scale-95 dark:bg-white/10 dark:text-brand-100"
+                        className="rounded-pill bg-brand-500/5 px-3 py-1.5 text-[calc(13px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium text-brand-900 transition hover:bg-brand-500/10 active:scale-95 dark:bg-white/10 dark:text-brand-100"
                       >
                         #{tag.label}
                       </Link>
