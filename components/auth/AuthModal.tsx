@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { CloseIcon } from "@/components/icons";
+import { useConfiguracion } from "./ConfiguracionProvider";
 
 interface Props {
   open: boolean;
@@ -14,14 +15,16 @@ interface Props {
 
 type Paso = "correo" | "codigo" | "listo";
 
-/** En modo demostración no se envía correo: se entra con el código 0000.
- *  Sirve para enseñar el producto sin depender de una bandeja de entrada. */
-const demo = process.env.NEXT_PUBLIC_DEMO_AUTH === "1";
-
 /** Acceso por código de un solo uso (OTP) al correo.
  *  Los textos siguen la propuesta: se pide la cuenta cuando el lector ya quiso
- *  hacer algo (guardar, seguir), no como una puerta al entrar. */
+ *  hacer algo (guardar, seguir), no como una puerta al entrar.
+ *
+ *  En modo demostración no se envía correo: se entra con el código 0000, para
+ *  poder enseñar el producto sin depender de una bandeja de entrada. Ese
+ *  interruptor lo dice el servidor —no una constante de compilación— porque
+ *  cuando se desincronizaba la pantalla se pasaba al acceso real sin avisar. */
 export default function AuthModal({ open, onClose, motivo }: Props) {
+  const { demo } = useConfiguracion();
   const [paso, setPaso] = useState<Paso>("correo");
   const [correo, setCorreo] = useState("");
   const [nombre, setNombre] = useState("");
@@ -50,7 +53,7 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previo;
     };
-  }, [open, onClose]);
+  }, [open, onClose, demo]);
 
   async function pedirCodigo(e: React.FormEvent) {
     e.preventDefault();
@@ -217,11 +220,14 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
                 </>
               )}
             </p>
+            {/* En demostración el botón se habilita con 4 dígitos, pero el
+                campo admite hasta 6: quien está acostumbrado a los códigos de
+                seis escribe 000000 y también debe poder entrar. */}
             <input
               autoFocus
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={demo ? 4 : 6}
+              maxLength={6}
               required
               value={codigo}
               onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ""))}

@@ -33,9 +33,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 });
   }
 
-  if (body.codigo !== CODIGO_DEMO) {
+  // Se admite de 4 a 6 ceros: el código anunciado es 0000, pero quien está
+  // acostumbrado a los códigos de seis dígitos escribe 000000 sin pensarlo, y
+  // no tiene sentido que una demostración falle por eso.
+  if (!/^0{4,6}$/.test((body.codigo ?? "").trim())) {
     return NextResponse.json(
-      { error: "El código de demostración es 0000." },
+      { error: `El código de demostración es ${CODIGO_DEMO}.` },
       { status: 401 }
     );
   }

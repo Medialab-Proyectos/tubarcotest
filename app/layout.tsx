@@ -4,6 +4,7 @@ import "./globals.css";
 import SiteHeader from "@/components/layout/SiteHeader";
 import Footer from "@/components/layout/Footer";
 import ReaccionesProvider from "@/components/news/ReaccionesProvider";
+import ConfiguracionProvider from "@/components/auth/ConfiguracionProvider";
 import { SITE_LOGO, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const poppins = Poppins({
@@ -112,13 +113,17 @@ export default function RootLayout({
         >
           Saltar al contenido
         </a>
-        <SiteHeader />
-        {/* Los contadores de "me gusta" de todas las tarjetas se resuelven en
-            una sola consulta desde aquí (ver ReaccionesProvider). */}
-        <ReaccionesProvider>
-          <main id="contenido">{children}</main>
-        </ReaccionesProvider>
-        <Footer />
+        {/* El modo demostración lo decide el servidor en cada render, no una
+            constante congelada al compilar (ver ConfiguracionProvider). */}
+        <ConfiguracionProvider demo={process.env.NEXT_PUBLIC_DEMO_AUTH === "1"}>
+          <SiteHeader />
+          {/* Los contadores de "me gusta" de todas las tarjetas se resuelven en
+              una sola consulta desde aquí (ver ReaccionesProvider). */}
+          <ReaccionesProvider>
+            <main id="contenido">{children}</main>
+          </ReaccionesProvider>
+          <Footer />
+        </ConfiguracionProvider>
       </body>
     </html>
   );

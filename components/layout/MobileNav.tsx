@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 import { NAV_ITEMS } from "@/lib/wp";
 import Logo from "./Logo";
 import SearchBox from "./SearchBox";
@@ -44,12 +46,31 @@ function Hamburger({ open }: { open: boolean }) {
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
   const [auth, setAuth] = useState(false);
+  const [usuario, setUsuario] = useState<User | null>(null);
   const pathname = usePathname();
 
   // Cierra el drawer al navegar
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // Quién está dentro, para que el pie del menú ofrezca lo que corresponde.
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => setUsuario(data.user ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, sesion) =>
+      setUsuario(sesion?.user ?? null)
+    );
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  async function salir() {
+    const supabase = createClient();
+    await supabase?.auth.signOut();
+    setOpen(false);
+    window.location.reload();
+  }
 
   // Bloquea el scroll del body cuando el drawer está abierto
   useEffect(() => {
@@ -154,16 +175,41 @@ export default function MobileNav() {
 
           <div className="space-y-3 border-t border-ink-50 p-4 dark:border-white/10">
             <FontSizeControl withLabel />
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                setAuth(true);
-              }}
-              className="w-full rounded-pill bg-brand-500 py-3 text-sm font-medium text-white transition active:scale-[0.98]"
-            >
-              Iniciar sesión
-            </button>
+            {/* Con sesión, este menú ofrecía "Iniciar sesión" igual que sin
+                ella: el lector que ya había entrado no tenía desde aquí forma
+                de llegar a sus guardadas ni de salir. */}
+            {usuario ? (
+              <>
+                <p className="truncate px-1 text-xs text-ink-400 dark:text-white/50">
+                  {usuario.email}
+                </p>
+                <Link
+                  href="/mi-tubarco"
+                  onClick={() => setOpen(false)}
+                  className="block w-full rounded-pill bg-brand-500 py-3 text-center text-sm font-medium text-white transition active:scale-[0.98]"
+                >
+                  Mi TuBarco
+                </Link>
+                <button
+                  type="button"
+                  onClick={salir}
+                  className="w-full rounded-pill border border-ink-100 py-3 text-sm font-medium text-ink-700 transition active:scale-[0.98] dark:border-white/15 dark:text-white/80"
+                >
+                  Cerrar sesión
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setAuth(true);
+                }}
+                className="w-full rounded-pill bg-brand-500 py-3 text-sm font-medium text-white transition active:scale-[0.98]"
+              >
+                Iniciar sesión
+              </button>
+            )}
           </div>
         </nav>
       </div>
