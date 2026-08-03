@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EyeIcon } from "@/components/icons";
+import { EyeIcon, EyeOffIcon } from "@/components/icons";
 
 interface Props {
   bullets: string[];
@@ -44,7 +44,11 @@ export default function LoEsencial({ bullets, source = null }: Props) {
           <span className="hidden sm:inline">{etiquetaLarga}</span>
         </span>
 
-        {/* En móvil solo el ojo: "Ocultar ⌄" junto a la etiqueta no cabía. */}
+        {/* En móvil solo el ojo: "Ocultar ⌄" junto a la etiqueta no cabía.
+            El ojo se tacha al cerrar el resumen — sin ese cambio el botón se
+            veía idéntico en los dos estados y no se sabía qué iba a pasar al
+            pulsarlo. Ojo con número (arriba, junto a la categoría) = cuánta
+            gente leyó la nota; este = mostrar u ocultar el resumen. */}
         <button
           type="button"
           onClick={() => setAbierto((v) => !v)}
@@ -52,7 +56,11 @@ export default function LoEsencial({ bullets, source = null }: Props) {
           aria-label={abierto ? "Ocultar lo esencial" : "Ver lo esencial"}
           className="ml-auto flex shrink-0 items-center gap-1.5 rounded-pill px-1.5 py-1 text-sm font-medium text-brand-500 transition hover:underline active:scale-90 dark:text-brand-100"
         >
-          <EyeIcon width={18} height={18} aria-hidden />
+          {abierto ? (
+            <EyeIcon width={18} height={18} aria-hidden />
+          ) : (
+            <EyeOffIcon width={18} height={18} aria-hidden />
+          )}
           <span className="hidden sm:inline">{abierto ? "Ocultar" : "Ver"}</span>
         </button>
       </div>

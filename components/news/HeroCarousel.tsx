@@ -68,17 +68,47 @@ export default function HeroCarousel({ articles }: Props) {
           }`}
           aria-hidden={i !== index}
         >
+          {/* Relleno: la misma foto ampliada y desenfocada. Las portadas que
+              publica WordPress son banners de 1080x450 y esta caja es más alta
+              que ancha: recortarlas para llenarla se comía casi la mitad del
+              ancho y dejaba a la gente cortada. Así se ve la foto entera y el
+              hueco que sobra lo tapa su propio color. */}
+          <div aria-hidden className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0 scale-125 blur-3xl">
+              {/* Calidad baja a propósito: va desenfocado, nadie lo mira, y así
+                  no se descarga dos veces la foto buena. */}
+              <Foto
+                src={a.image}
+                alt=""
+                sizes="(max-width: 1024px) 32vw, 24vw"
+                className="object-cover"
+                quality={35}
+              />
+            </div>
+            {/* Sin este velo el relleno compite con la foto y el conjunto se ve
+                descolorido en vez de intencionado. */}
+            <div className="absolute inset-0 bg-ink-900/45" />
+          </div>
+          {/* La foto se sube al tercio superior para que caiga entera en la
+              zona limpia: centrada en la caja, su borde inferior se metía
+              debajo del titular. */}
           <Foto
             src={a.image}
             alt={a.imageAlt}
-            sizes="(max-width: 1024px) 100vw, 66vw"
-            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 70vw"
+            className="object-contain [object-position:center_30%]"
+            quality={88}
             priority={i === 0}
           />
         </div>
       ))}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-ink-900 from-5% via-ink-900/60 via-45% to-transparent to-95%" />
+      {/* Velo para que el titular se lea sobre la foto.
+          Antes subía hasta el 95% del alto y a media altura ya era un 60% de
+          negro: la foto quedaba convertida en una mancha y no se distinguía ni
+          una cara. Ahora es más denso pero mucho más corto — se apaga al 58%—,
+          así que la mitad superior de la imagen se ve limpia. */}
+      <div className="absolute inset-0 bg-gradient-to-t from-ink-900 from-0% via-ink-900/80 via-28% to-transparent to-58%" />
 
       <div className="absolute left-0 top-6">
         <Badge variant="red" icon="boat" live>

@@ -105,16 +105,14 @@ export default async function HomePage() {
               <div className="h-[320px] lg:h-auto">
                 <NewsCard article={editorBig} size="md" priority />
               </div>
-              <div className="flex flex-col gap-4">
-                {editorList.map((a, i) => (
-                  <NewsListItem
-                    key={a.id}
-                    article={a}
-                    thumbWidth={180}
-                    lines={2}
-                    card
-                    invertir={i % 2 === 1}
-                  />
+              {/* Las mini-noticias van igual que en "Populares": una sola caja
+                  blanca con la miniatura de 132px y tres líneas de titular. Con
+                  la miniatura de 180px y dos líneas el texto quedaba ilegible en
+                  móvil, y tener dos tratamientos distintos para la misma lista
+                  rompía la lectura de la portada. */}
+              <div className="flex h-full flex-col gap-4 rounded-card bg-white p-4 dark:bg-ink-800 sm:p-6">
+                {editorList.map((a) => (
+                  <NewsListItem key={a.id} article={a} />
                 ))}
               </div>
             </div>

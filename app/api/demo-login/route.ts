@@ -3,6 +3,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 const CODIGO_DEMO = "0000";
+/** Cuenta con la que se entra cuando no se escribe ningún correo. */
+const CUENTA_DEMO = "demo@tubarco.news";
 
 /** Acceso de demostración: entra con el código 0000, sin esperar el correo.
  *
@@ -31,16 +33,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Cuerpo inválido" }, { status: 400 });
   }
 
-  const email = (body.email ?? "").trim().toLowerCase();
-  const nombre = (body.nombre ?? "").trim();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return NextResponse.json({ error: "Correo inválido" }, { status: 400 });
-  }
   if (body.codigo !== CODIGO_DEMO) {
     return NextResponse.json(
       { error: "El código de demostración es 0000." },
       { status: 401 }
     );
+  }
+
+  // Sin correo se entra con la cuenta de demostración. Enseñar el producto no
+  // debería costar una bandeja de entrada: con 0000 basta.
+  const email = (body.email ?? "").trim().toLowerCase() || CUENTA_DEMO;
+  const nombre = (body.nombre ?? "").trim() || (email === CUENTA_DEMO ? "Invitada" : "");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return NextResponse.json({ error: "Correo inválido" }, { status: 400 });
   }
 
   const admin = { apikey: secreta, Authorization: `Bearer ${secreta}` };

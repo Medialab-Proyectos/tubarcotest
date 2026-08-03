@@ -21,6 +21,7 @@ import {
   Bookmark,
   Clock,
   Eye,
+  EyeOff,
   Link2,
   Check,
   X as Close,
@@ -67,6 +68,11 @@ export function ClockIcon(props: IconProps) {
 
 export function EyeIcon(props: IconProps) {
   return <Eye width={20} height={20} strokeWidth={1.8} {...props} />;
+}
+
+/** Ojo tachado: el estado "oculto" del interruptor de Lo esencial. */
+export function EyeOffIcon(props: IconProps) {
+  return <EyeOff width={20} height={20} strokeWidth={1.8} {...props} />;
 }
 
 export function LinkIcon(props: IconProps) {

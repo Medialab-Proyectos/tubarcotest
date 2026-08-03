@@ -10,6 +10,10 @@ interface Props {
   sizes: string;
   className?: string;
   priority?: boolean;
+  /** Calidad de recompresión. Las fotos que WordPress publica ya vienen muy
+   *  comprimidas (el hero ronda los 20 KB), así que en las grandes se sube por
+   *  encima del 75 de fábrica para no encimar una segunda pérdida. */
+  quality?: number;
 }
 
 /** Foto de una noticia con red de seguridad.
@@ -19,7 +23,14 @@ interface Props {
  *  (muchas veces es un fallo puntual del servidor de imágenes) y, si vuelve a
  *  fallar, se pinta el barquito de TuBarco sobre el degradado de marca: la
  *  tarjeta sigue viéndose intencionada en lugar de rota. */
-export default function Foto({ src, alt, sizes, className = "", priority = false }: Props) {
+export default function Foto({
+  src,
+  alt,
+  sizes,
+  className = "",
+  priority = false,
+  quality,
+}: Props) {
   const [intento, setIntento] = useState(0);
 
   // Sin foto de origen, o ya se agotó el reintento: respaldo de marca.
@@ -35,6 +46,7 @@ export default function Foto({ src, alt, sizes, className = "", priority = false
       sizes={sizes}
       className={className}
       priority={priority}
+      quality={quality}
       onError={() => setIntento((n) => n + 1)}
     />
   );

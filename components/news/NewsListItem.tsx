@@ -13,9 +13,6 @@ interface Props {
   /** Tarjeta blanca con la imagen a ras del borde (Figma 79:2922). Sin esto el
    *  ítem es transparente, para usarlo dentro de un panel que ya es blanco. */
   card?: boolean;
-  /** Pone la foto a la derecha en móvil. Alternándolo ítem a ítem, la lista
-   *  deja de leerse como una columna plana (patrón de Google News). */
-  invertir?: boolean;
 }
 
 /** Ancho de la miniatura en móvil. Los 180px que pedía el diseño de escritorio
@@ -30,7 +27,6 @@ export default function NewsListItem({
   className = "",
   lines = 3,
   card = false,
-  invertir = false,
 }: Props) {
   const anchoMovil = Math.min(thumbWidth, ANCHO_MOVIL);
 
@@ -38,12 +34,8 @@ export default function NewsListItem({
     <Link
       href={`/articulo/${article.slug}`}
       className={`group flex gap-4 ${
-        card ? "overflow-hidden rounded-card bg-white dark:bg-ink-800" : ""
-      } ${
-        // En escritorio la foto vuelve siempre a la izquierda: ahí la columna es
-        // ancha y el zigzag rompería la retícula del diseño.
-        invertir ? "flex-row-reverse sm:flex-row" : ""
-      } ${card ? (invertir ? "pl-4 sm:pl-0 sm:pr-4" : "pr-4") : ""} ${className}`}
+        card ? "overflow-hidden rounded-card bg-white pr-4 dark:bg-ink-800" : ""
+      } ${className}`}
     >
       <div
         className={`relative w-[var(--miniatura-movil)] shrink-0 self-start overflow-hidden bg-ink-50 dark:bg-ink-900 sm:w-[var(--miniatura-web)] ${

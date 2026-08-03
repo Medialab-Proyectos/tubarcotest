@@ -32,7 +32,9 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    setPaso("correo");
+    // En demostración no hay nada que preguntar antes del código: se abre
+    // directamente en el paso donde se escribe 0000.
+    setPaso(demo ? "codigo" : "correo");
     setError("");
     setCodigo("");
     const t = setTimeout(() => inputRef.current?.focus(), 50);
@@ -203,7 +205,11 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
           <form onSubmit={verificar} className="mt-4 space-y-3">
             <p className="text-sm text-ink-500 dark:text-white/60">
               {demo ? (
-                <>Escribe <span className="font-semibold text-ink-900 dark:text-white">0000</span> para entrar.</>
+                <>
+                  Escribe{" "}
+                  <span className="font-semibold text-ink-900 dark:text-white">0000</span>{" "}
+                  y entras. No hace falta correo.
+                </>
               ) : (
                 <>
                   Revisa tu correo. Enviamos un código a{" "}
@@ -231,13 +237,17 @@ export default function AuthModal({ open, onClose, motivo }: Props) {
             >
               {cargando ? "Verificando…" : "Entrar"}
             </button>
-            <button
-              type="button"
-              onClick={() => setPaso("correo")}
-              className="w-full text-sm text-brand-500 transition hover:underline dark:text-brand-100"
-            >
-              Usar otro correo
-            </button>
+            {/* En demostración no se pasó por el paso del correo, así que no hay
+                ningún "otro correo" al que volver. */}
+            {!demo && (
+              <button
+                type="button"
+                onClick={() => setPaso("correo")}
+                className="w-full text-sm text-brand-500 transition hover:underline dark:text-brand-100"
+              >
+                Usar otro correo
+              </button>
+            )}
           </form>
         )}
 

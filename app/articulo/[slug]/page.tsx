@@ -173,10 +173,30 @@ export default async function ArticlePage({ params }: Params) {
           <h1 className="font-heading text-[calc(28px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium leading-tight text-ink-900 dark:text-white lg:text-[calc(36px*var(--font-scale,1)*var(--font-user-scale,1))]">
             {article.title}
           </h1>
-          {/* En móvil esto se apila: fecha · tiempo de lectura, y la categoría
-              debajo. El "|" se oculta ahí porque quedaba huérfano al final de
-              la primera línea, con la categoría sola en la siguiente. */}
+          {/* En móvil esto se apila en dos filas: arriba la categoría con las
+              lecturas al lado —los dos datos que dicen de qué va y si la gente
+              la está leyendo—, y debajo la fecha y el tiempo de lectura. Antes
+              el ojito de las lecturas caía suelto en medio de la fila y la
+              categoría quedaba sola al final, sin nada que la acompañara. */}
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-400 dark:text-white/50 lg:text-xl">
+            <span className="flex w-full items-center gap-3 lg:w-auto">
+              {article.categorySlug ? (
+                <Link
+                  href={`/categoria/${article.categorySlug}`}
+                  className="font-semibold text-brand-500 transition hover:underline dark:text-brand-100"
+                >
+                  {category}
+                </Link>
+              ) : (
+                <span className="font-semibold text-brand-500 dark:text-brand-100">
+                  {category}
+                </span>
+              )}
+              <ViewCounter wpPostId={article.id} slug={slug} />
+            </span>
+            <span aria-hidden className="hidden lg:inline">
+              |
+            </span>
             <span className="whitespace-nowrap lg:flex-1">
               {formatArticleDate(article.date)}
             </span>
@@ -184,22 +204,6 @@ export default async function ArticlePage({ params }: Params) {
               <ClockIcon width={18} height={18} className="lg:h-5 lg:w-5" />
               {minutes} minutos de lectura
             </span>
-            <ViewCounter wpPostId={article.id} slug={slug} />
-            <span aria-hidden className="hidden lg:inline">
-              |
-            </span>
-            {article.categorySlug ? (
-              <Link
-                href={`/categoria/${article.categorySlug}`}
-                className="w-full font-semibold text-brand-500 transition hover:underline dark:text-brand-100 lg:w-auto"
-              >
-                {category}
-              </Link>
-            ) : (
-              <span className="w-full font-semibold text-brand-500 dark:text-brand-100 lg:w-auto">
-                {category}
-              </span>
-            )}
           </div>
         </header>
 
