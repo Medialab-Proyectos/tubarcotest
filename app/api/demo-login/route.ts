@@ -6,6 +6,25 @@ const CODIGO_DEMO = "0000";
 /** Cuenta con la que se entra cuando no se escribe ningún correo. */
 const CUENTA_DEMO = "demo@tubarco.news";
 
+/** Diagnóstico: ¿está encendido el modo demostración en ESTE servidor?
+ *
+ *  Sirve para saber de un vistazo, abriendo /api/demo-login en el navegador, si
+ *  la variable de entorno llegó al despliegue — que es la causa habitual de que
+ *  el 0000 funcione en local y no en producción. No expone ningún secreto: lo
+ *  mismo se deduce mirando el texto del diálogo de acceso. */
+export async function GET() {
+  const demo = process.env.NEXT_PUBLIC_DEMO_AUTH === "1";
+  return NextResponse.json({
+    demo,
+    // Sin la llave de servidor el 0000 tampoco entra, aunque el modo esté puesto.
+    llaveDeServidor: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+    supabase: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL),
+    diagnostico: demo
+      ? "Modo demostración activo: se entra con 0000."
+      : "Modo demostración APAGADO: falta NEXT_PUBLIC_DEMO_AUTH=1 en este entorno (y hay que volver a desplegar).",
+  });
+}
+
 /** Acceso de demostración: entra con el código 0000, sin esperar el correo.
  *
  *  Crea una sesión REAL de Supabase, así que guardar noticias y Mi TuBarco
