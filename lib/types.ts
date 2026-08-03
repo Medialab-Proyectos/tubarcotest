@@ -83,6 +83,8 @@ export interface Article {
   /** Id de la categoría principal, para pedir "más de lo mismo" a la API. */
   categoryId: number | null;
   author: string;
+  /** Etiquetas de WordPress, para poder anclar una historia a un acontecimiento. */
+  tags: { id: number; name: string; slug: string }[];
   isVideo: boolean;
   /** Plataforma del video incrustado, cuando se pudo determinar. */
   videoSource?: "YouTube" | "Vimeo";

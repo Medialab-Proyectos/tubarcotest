@@ -11,6 +11,7 @@ import SearchBox from "./SearchBox";
 import ThemeToggle from "./ThemeToggle";
 import AuthModal from "@/components/auth/AuthModal";
 import FontSizeControl from "./FontSizeControl";
+import PersonalizarBoton from "./PersonalizarBoton";
 
 const REGIONS = [
   { label: "Barranquilla", href: "/categoria/tubarco-noticias-barranquilla" },
@@ -174,6 +175,14 @@ export default function MobileNav() {
           </div>
 
           <div className="space-y-3 border-t border-ink-50 p-4 dark:border-white/10">
+            {/* En móvil no existe la barra de secciones, que es donde vive la
+                varita en escritorio: sin esto, personalizar sería inalcanzable
+                desde el teléfono. */}
+            <PersonalizarBoton
+              conTexto
+              iconSize={18}
+              className="flex w-full items-center justify-center gap-2 rounded-pill border border-ink-100 py-3 text-sm font-medium text-ink-700 transition active:scale-[0.98] dark:border-white/15 dark:text-white/80"
+            />
             <FontSizeControl withLabel />
             {/* Con sesión, este menú ofrecía "Iniciar sesión" igual que sin
                 ella: el lector que ya había entrado no tenía desde aquí forma

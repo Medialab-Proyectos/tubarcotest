@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/wp";
-import { WandIcon } from "@/components/icons";
 import SearchBox from "./SearchBox";
+import PersonalizarBoton from "./PersonalizarBoton";
 import ThemeToggle from "./ThemeToggle";
 import FontSizeControl from "./FontSizeControl";
 
@@ -47,12 +47,7 @@ export default function MenuBar() {
             iconSize={22}
             iconClassName="flex h-[46px] items-center justify-center rounded-pill px-4 transition hover:text-brand-500"
           />
-          <button
-            aria-label="Personalizar"
-            className="flex h-[46px] items-center justify-center rounded-pill px-4 transition hover:text-brand-500"
-          >
-            <WandIcon width={22} height={22} />
-          </button>
+          <PersonalizarBoton className="flex h-[46px] items-center justify-center rounded-pill px-4 transition hover:text-brand-500" />
           <ThemeToggle className="flex h-[46px] items-center justify-center rounded-pill px-4 transition hover:text-brand-500" />
         </div>
       </div>

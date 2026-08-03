@@ -20,7 +20,15 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
+# El comodín va al final: `.env*.local` no cubría `.env.local.bak`, y ese
+# archivo llegó a versionarse en un repositorio público.
 .env*.local
+.env*.local.*
+.env.*.bak
+
+# Documentos internos: la propuesta lleva arquitectura y presupuesto, y este
+# repositorio es público. Se conserva en local, fuera del control de versiones.
+docs/*.pdf
 
 # typescript
 *.tsbuildinfo

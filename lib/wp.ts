@@ -134,7 +134,8 @@ const LIST_FIELDS =
 
 function normalizePost(post: WPPost): Article {
   const media = post._embedded?.["wp:featuredmedia"]?.[0];
-  const term = post._embedded?.["wp:term"]?.flat().find((t) => t?.taxonomy === "category");
+  const terms = post._embedded?.["wp:term"]?.flat() ?? [];
+  const term = terms.find((t) => t?.taxonomy === "category");
   const author = post._embedded?.author?.[0];
 
   const rawContent = post.content?.rendered ?? "";
@@ -159,6 +160,9 @@ function normalizePost(post: WPPost): Article {
     categorySlug: term?.slug ?? "",
     categoryId: term?.id ?? null,
     author: author?.name ?? "Tu Barco",
+    tags: terms
+      .filter((t) => t?.taxonomy === "post_tag")
+      .map((t) => ({ id: t.id, name: t.name, slug: t.slug })),
     isVideo,
     videoSource,
   };

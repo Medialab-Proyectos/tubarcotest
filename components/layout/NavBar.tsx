@@ -3,6 +3,7 @@ import { BoatIcon } from "@/components/icons";
 import Logo from "./Logo";
 import MobileNav from "./MobileNav";
 import AuthButton from "@/components/auth/AuthButton";
+import RegistrarmeBoton from "@/components/auth/RegistrarmeBoton";
 
 export default function NavBar() {
   return (
@@ -32,12 +33,7 @@ export default function NavBar() {
 
         {/* DERECHA */}
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="hidden rounded-pill border border-white px-4 py-3 text-[calc(18px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium leading-6 transition hover:bg-white/10 lg:block"
-          >
-            Registrarme
-          </button>
+          <RegistrarmeBoton className="hidden rounded-pill border border-white px-4 py-3 text-[calc(18px*var(--font-scale,1)*var(--font-user-scale,1))] font-medium leading-6 transition hover:bg-white/10 active:scale-95 lg:block" />
           <AuthButton />
         </div>
       </div>

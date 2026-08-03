@@ -10,6 +10,7 @@ import {
   readingTime,
 } from "@/lib/utils";
 import { SITE_LOGO, SITE_NAME, SITE_URL } from "@/lib/site";
+import { historiaDeArticulo } from "@/lib/historias";
 import Foto from "@/components/news/Foto";
 import NewsListItem from "@/components/news/NewsListItem";
 import NewsCard from "@/components/news/NewsCard";
@@ -19,6 +20,7 @@ import AdSlot from "@/components/news/AdSlot";
 import ArticleActions from "@/components/news/ArticleActions";
 import ReadingProgress from "@/components/news/ReadingProgress";
 import ViewCounter from "@/components/news/ViewCounter";
+import SeguirHistoria from "@/components/news/SeguirHistoria";
 import LoEsencialServidor, { EsqueletoEsencial } from "@/components/news/LoEsencialServidor";
 import Newsletter from "@/components/layout/Newsletter";
 import { ArrowLeftIcon, ClockIcon, FlameIcon } from "@/components/icons";
@@ -68,6 +70,7 @@ export default async function ArticlePage({ params }: Params) {
   const popular = (sameCategory.length > 0 ? sameCategory : related).slice(0, 4);
   const moreNews = related.slice(0, 5);
   const minutes = readingTime(article.content);
+  const historia = historiaDeArticulo(article);
 
   const articleUrl = `${SITE_URL}/articulo/${slug}`;
   const articleJsonLd = {
@@ -205,6 +208,14 @@ export default async function ArticlePage({ params }: Params) {
               {minutes} minutos de lectura
             </span>
           </div>
+
+          {/* Seguir el acontecimiento, no la nota: solo aparece si la noticia
+              tiene una etiqueta que identifique una historia de verdad. */}
+          {historia && (
+            <div className="mt-4">
+              <SeguirHistoria historia={historia} />
+            </div>
+          )}
         </header>
 
         {/* LO ESENCIAL — tres puntos, antes del cuerpo */}

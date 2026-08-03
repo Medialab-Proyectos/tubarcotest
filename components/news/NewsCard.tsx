@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Article } from "@/lib/types";
+import { cleanCategoryName } from "@/lib/utils";
 import ArticleMeta from "./ArticleMeta";
 import Badge from "./Badge";
 import Foto from "./Foto";
@@ -60,6 +61,25 @@ const badgeSize: Record<Size, "sm" | "md"> = {
   lg: "md",
 };
 
+// Separación de la cinta al borde superior: en las tarjetas bajas los 24px del
+// diseño grande dejaban la cinta casi a media foto.
+const badgeTop: Record<Size, string> = {
+  xs: "top-3",
+  sm: "top-4",
+  md: "top-6",
+  lg: "top-6",
+};
+
+/** Rótulo de la cinta. "Sin categoría" es lo que pone WordPress cuando la nota
+ *  se publicó sin clasificar: enseñarlo en rojo parece un error, y dejar la
+ *  tarjeta sin cinta rompe la fila. Se cae a un rótulo neutro —el arreglo de
+ *  verdad es clasificar esa nota en WordPress. */
+function rotuloCategoria(nombre: string): string {
+  const limpia = cleanCategoryName(nombre ?? "").trim();
+  if (!limpia || /^sin categor/i.test(limpia)) return "Noticias";
+  return limpia;
+}
+
 /** Tarjeta "Noticia Principal": imagen a sangre con overlay y texto encima. */
 export default function NewsCard({
   article,
@@ -71,6 +91,13 @@ export default function NewsCard({
   priority = false,
   as: Heading = "h3",
 }: Props) {
+  /* Toda tarjeta lleva su cinta roja con la categoría: es lo que identifica de
+     un vistazo de qué va la nota, y en la portada solo la tenían el hero y el
+     carrusel de Imprescindible. Un `badge` explícito manda sobre ella (ahí la
+     cinta dice otra cosa: "Últimas noticias", "TUBARCO.NEWS"). */
+  const rotulo = badge ?? rotuloCategoria(article.category);
+  const variante = badge ? badgeVariant : "red";
+
   return (
     <Link
       href={`/articulo/${article.slug}`}
@@ -89,10 +116,10 @@ export default function NewsCard({
           la foto quedaba escondida detrás del texto. */}
       <div className={`absolute inset-0 bg-gradient-to-t ${overlay[size]}`} />
 
-      {badge && (
-        <div className="absolute left-0 top-6">
-          <Badge variant={badgeVariant} icon="boat" size={badgeSize[size]}>
-            {badge}
+      {rotulo && (
+        <div className={`absolute left-0 z-10 ${badgeTop[size]}`}>
+          <Badge variant={variante} icon="boat" size={badgeSize[size]}>
+            {rotulo}
           </Badge>
         </div>
       )}
@@ -101,8 +128,9 @@ export default function NewsCard({
           Va con el logo real —y con el rojo de YouTube— porque el nombre escrito
           se leía como una etiqueta más de la nota, no como la plataforma. */}
       {article.isVideo && article.videoSource && size === "lg" && (
+        /* A la derecha: la esquina izquierda es de la cinta de categoría. */
         <span
-          className={`absolute left-6 top-6 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white backdrop-blur ${
+          className={`absolute right-6 top-6 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white backdrop-blur ${
             article.videoSource === "YouTube" ? "bg-[#FF0000]" : "bg-[#1AB7EA]"
           }`}
         >
@@ -120,8 +148,14 @@ export default function NewsCard({
       {article.isVideo && size !== "lg" && (
         /* Chip tenue detrás del play: en fotos claras el ícono blanco solo
            desaparecía y no se distinguía un video de una nota normal. Si el
-           video es de YouTube se usa su logo, que se reconoce de un vistazo. */
-        <span className="absolute left-3 top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900/55 text-white backdrop-blur-sm">
+           video es de YouTube se usa su logo, que se reconoce de un vistazo.
+           Va a la derecha cuando hay cinta de categoría, que ocupa la esquina
+           izquierda. */
+        <span
+          className={`absolute top-3 flex h-7 w-7 items-center justify-center rounded-lg bg-ink-900/55 text-white backdrop-blur-sm ${
+            rotulo ? "right-3" : "left-3"
+          }`}
+        >
           {article.videoSource === "YouTube" ? (
             <YoutubeIcon width={17} height={17} className="text-[#FF0000]" />
           ) : (

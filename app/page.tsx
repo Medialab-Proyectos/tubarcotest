@@ -8,6 +8,7 @@ import SectionTitle from "@/components/news/SectionTitle";
 import CardCarousel from "@/components/news/CardCarousel";
 import AdSlot from "@/components/news/AdSlot";
 import LoadMoreNews from "@/components/news/LoadMoreNews";
+import ParaTiEnPortada from "@/components/news/ParaTiEnPortada";
 import Newsletter from "@/components/layout/Newsletter";
 import { FlameIcon } from "@/components/icons";
 
@@ -74,6 +75,12 @@ export default async function HomePage() {
           {populares.length > 0 && <PopularList articles={populares} />}
         </div>
       </section>
+
+      {/* PARA TI — solo aparece si el lector entró y eligió temas. Va aquí,
+          justo bajo la apertura: si quedara al fondo, "Personalizar" seguiría
+          pareciendo que no hace nada. La portada de arriba sigue siendo la que
+          arma la redacción. */}
+      <ParaTiEnPortada />
 
       {/* FILA DE 4 NOTICIAS
           El Figma deja esta fila sin rótulo, pero en revisión se leía como un

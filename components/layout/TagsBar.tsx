@@ -2,13 +2,18 @@ import Link from "next/link";
 import { TAG_ITEMS } from "@/lib/wp";
 import { CloudSunIcon, TrendUpIcon, TuBarcoIcon } from "@/components/icons";
 import { ciudadIndicadores, formatearPesos, getIndicadores } from "@/lib/indicadores";
+import { getPartidos } from "@/lib/partidos";
+import PartidosBar from "./PartidosBar";
 
 /** Barra de tags populares — Figma 103:971.
  *  Fondo #F0F3F6 (surface-muted), sin bordes: el contraste con el blanco del
  *  menú es el único separador. El chip "Tags populares" es un rectángulo de 4px
  *  con fondo azul al 5% y una pestaña triangular que apunta a los tags. */
 export default async function TagsBar() {
-  const { dolar, clima } = await getIndicadores();
+  const [{ dolar, clima }, partidos] = await Promise.all([
+    getIndicadores(),
+    getPartidos(),
+  ]);
 
   return (
     <div className="bg-surface-muted dark:bg-ink-800">
@@ -43,7 +48,10 @@ export default async function TagsBar() {
         {/* Datos reales: TRM oficial y clima de Cali. Si una fuente falla, ese
             indicador no se pinta — antes mostraba 3.985 fijo, que llevaba
             meses desactualizado. */}
-        <div className="ml-auto hidden shrink-0 items-center gap-2 lg:flex">
+        <div className="ml-auto hidden shrink-0 items-center gap-2 text-[calc(12px*var(--font-scale,1)*var(--font-user-scale,1))] lg:flex">
+          {/* Los partidos van delante del dólar: es lo que más se mira de un
+              vistazo al entrar. */}
+          <PartidosBar partidos={partidos} />
           {dolar && (
             <span
               className="flex items-center gap-1 border-l border-ink-100 pl-3 dark:border-white/10"
